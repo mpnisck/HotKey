@@ -23,6 +23,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "@tailwindcss/postcss": "^4.0.5",
     "postcss": "^8.5.1",
+    "react-router-dom": "^7.1.5",
     "tailwindcss": "^4.0.5"
   },
   "devDependencies": {
