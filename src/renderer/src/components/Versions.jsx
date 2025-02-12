@@ -3,7 +3,7 @@ function Versions() {
     <ul>
       <li className="bg-[#333]">Electron v</li>
     </ul>
-  )
+  );
 }
 
-export default Versions
+export default Versions;

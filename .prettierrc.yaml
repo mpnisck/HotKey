@@ -10,6 +10,6 @@ bracketSameLine: false
 arrowParens: "always"
 endOfLine: "lf"
 singleAttributePerLine: false
-importOrder: ["^@core/(.*)$", "^@server/(.*)$", "^@ui/(.*)$", "^[./]"],
+importOrder: ["^@core/(.*)$", "^@server/(.*)$", "^@ui/(.*)$", "^[./]"]
 importOrderSeparation: true
 importOrderSortSpecifiers: true
