@@ -3,14 +3,13 @@
 body {
   display: flex;
   align-items: center;
-  justify-content: center;
   overflow: hidden;
   background-image: url("./wavy-lines.svg");
   background-size: cover;
   user-select: none;
+  padding: 10px;
 }
 html,
-div,
 applet,
 object,
 iframe,
@@ -43,12 +42,6 @@ b,
 u,
 i,
 center,
-dl,
-dt,
-dd,
-ol,
-ul,
-li,
 fieldset,
 form,
 label,
@@ -84,8 +77,6 @@ video {
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 100%;
-  font: inherit;
   vertical-align: baseline;
 }
 /* HTML5 display-role reset for older browsers */
@@ -103,11 +94,9 @@ section {
   display: block;
 }
 body {
-  line-height: 1;
+  line-height: 1.3;
 }
-ol,
-ul,
-li {
+ol {
   list-style: none;
 }
 blockquote,
