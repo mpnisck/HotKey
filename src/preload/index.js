@@ -1,16 +1,14 @@
-import { contextBridge } from "electron";
-import { electronAPI } from "@electron-toolkit/preload";
+const { contextBridge, ipcRenderer } = require("electron");
 
-const api = {};
+contextBridge.exposeInMainWorld("api", {
+  invoke: (channel, data) => ipcRenderer.invoke(channel, data),
+});
 
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld("electron", electronAPI);
-    contextBridge.exposeInMainWorld("api", api);
-  } catch (error) {
-    console.error(error);
-  }
-} else {
-  window.Electron = electronAPI;
-  window.api = api;
-}
+ipcRenderer
+  .invoke("get-menu-info")
+  .then((response) => {
+    console.log(response);
+  })
+  .catch((error) => {
+    console.error("데이터 invoke 실패", error);
+  });

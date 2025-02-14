@@ -37,7 +37,11 @@ function Loading() {
     <div className="w-full h-screen flex flex-col justify-center items-center gap-[50px]">
       <img src={textImgUrl} alt="HotKey Text" className="block w-[25%]" />
       <img src={logoImgUrl} alt="HotKey Logo" className="block w-[20%]" />
-      <p className="text-xl text-[#333]">Loading ...</p>
+      <p className="text-center text-xl text-[#333]">
+        이제 HotKey가 당신의 작업을 더욱 쉽게 만들어 드릴게요!
+        <br />
+        <b>함께 시작해 볼까요?</b>
+      </p>
 
       <div className="w-[50%] h-[10px] bg-gray-200 rounded-full">
         <div

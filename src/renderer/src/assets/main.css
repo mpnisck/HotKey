@@ -7,7 +7,7 @@ body {
   background-image: url("./wavy-lines.svg");
   background-size: cover;
   user-select: none;
-  padding: 10px;
+  padding: 20px 10px;
 }
 html,
 applet,
