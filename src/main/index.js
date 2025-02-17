@@ -47,7 +47,7 @@ function getActiveApp() {
     exec(`osascript -e '${activeAppScript}'`, (error, stdout, stderr) => {
       if (error || stderr) {
         console.error("AppleScript 오류 발생:", error || stderr);
-        reject("활성 앱 확인 오류: " + stderr || error);
+        reject("활성 앱 확인 오류: " + (stderr || error));
         return;
       }
 
@@ -67,7 +67,7 @@ function getMacMenuBarInfo(activeApp) {
       tell application "System Events"
           tell process "${activeApp}"
               set menuItems to {}
-              try
+              try =
                 set menuBarItems to menu bar items of menu bar 1
                 repeat with menuItem in menuBarItems
                     set menuItemName to name of menuItem
@@ -75,16 +75,36 @@ function getMacMenuBarInfo(activeApp) {
                     repeat with subItem in subMenuItems
                         set subItemName to name of subItem
                         set subItemShortcut to ""
+
                         try
-                          set subItemShortcut to accelerator of subItem
+                          set shortcutModifiers to ""
+                          set modValue to value of attribute "AXMenuItemCmdModifiers" of subItem
+
+                          if (modValue contains 1) then set shortcutModifiers to shortcutModifiers & "⌘ + "  -- Command
+                          if (modValue contains 2) then set shortcutModifiers to shortcutModifiers & "⌥ + "  -- Option
+                          if (modValue contains 4) then set shortcutModifiers to shortcutModifiers & "⇧ + "  -- Shift
+                          if (modValue contains 8) then set shortcutModifiers to shortcutModifiers & "⌃ + "  -- Control
+                          if (modValue contains 16) then set shortcutModifiers to shortcutModifiers & "Fn + "   -- Function (Fn)
+
+                          set commandChar to (value of attribute "AXMenuItemCmdChar" of subItem)
+                          if commandChar is not missing value then
+                            set subItemShortcut to shortcutModifiers & commandChar
+                          end if
                         end try
+
                         set subItemIcon to "No Icon"
                         try
                           set subItemIcon to image of subItem
                         on error
                           set subItemIcon to "No Icon"
                         end try
-                        set end of menuItems to {name: (menuItemName & " > " & subItemName), shortcut: subItemShortcut, icon: subItemIcon}
+
+                        -- 서브 아이템의 단축키가 존재할 경우만 메뉴 항목에 추가
+                        if subItemShortcut is not "" then
+                          set end of menuItems to {name: (menuItemName & " > " & subItemName), shortcut: subItemShortcut, icon: subItemIcon}
+                        else
+                          set end of menuItems to {name: (menuItemName & " > " & subItemName), icon: subItemIcon}
+                        end if
                     end repeat
                 end repeat
               on error errMsg
@@ -97,7 +117,9 @@ function getMacMenuBarInfo(activeApp) {
     exec(`osascript -e '${appleScript}'`, (error, stdout, stderr) => {
       if (error || stderr) {
         console.error("AppleScript 실행 중 오류 발생:", stderr || error);
-        reject(new Error("AppleScript 실행 중 오류 발생: " + stderr || error));
+        reject(
+          new Error("AppleScript 실행 중 오류 발생: " + (stderr || error))
+        );
         return;
       }
       const menuItems = parseMenuItems(stdout);
@@ -135,7 +157,6 @@ function convertShortcutToUnicode(shortcut) {
     )
     .join(" + ");
 }
-
 function setupIpcHandlers() {
   if (!ipcMain.listenerCount("get-menu-info")) {
     ipcMain.handle("get-menu-info", async (_, activeApp) => {
