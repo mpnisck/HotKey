@@ -67,7 +67,7 @@ function getMacMenuBarInfo(activeApp) {
       tell application "System Events"
           tell process "${activeApp}"
               set menuItems to {}
-              try =
+              try
                 set menuBarItems to menu bar items of menu bar 1
                 repeat with menuItem in menuBarItems
                     set menuItemName to name of menuItem
@@ -226,7 +226,6 @@ app.whenReady().then(() => {
   setupIpcHandlers();
   setupKeyboardListeners();
 });
-
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
