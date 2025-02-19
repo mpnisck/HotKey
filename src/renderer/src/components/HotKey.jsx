@@ -18,6 +18,7 @@ function Hotkey() {
   const fetchActiveApp = async () => {
     try {
       const activeApp = await window.api.invoke("get-active-app");
+      console.log("활성 앱:", activeApp);
       return activeApp || "활성화된 앱 정보를 찾을 수 없습니다.";
     } catch (error) {
       setError("활성화된 앱을 가져오는 중에 오류가 발생했습니다.");
@@ -34,8 +35,9 @@ function Hotkey() {
           .filter((item) => item.name && !item.name.includes("missing value"))
           .map((item) => ({
             name: item.name.replace(/^name:/, "").trim(),
-            shortcut: item.shortcut || "No Shortcut",
-            icon: item.icon || "No Icon",
+            shortcut: item.shortcut
+              ? item.shortcut.replace(/^shortcut:\s*/, "").trim()
+              : "",
           }));
         setMenuData(filteredMenuItems);
       } else {
@@ -44,14 +46,12 @@ function Hotkey() {
       }
     } catch (error) {
       setError("메뉴 항목을 가져오는 중에 오류가 발생했습니다.");
-      console.error("메뉴 항목 가져오기 실패:", error);
     }
   };
 
   const handleTabKey = async (event) => {
     if (event.key === "Tab") {
       event.preventDefault();
-
       const currentActiveApp = await fetchActiveApp();
       setActiveApp(currentActiveApp);
       await fetchMenuItems(currentActiveApp);
@@ -75,27 +75,43 @@ function Hotkey() {
     loadAppsAndMenus();
   }, []);
 
+  const renderMenuItem = (item) => {
+    return (
+      <div className="flex justify-between items-center py-4 px-4 hover:bg-[#eee]">
+        <span className="text-[16px] text-gray-800">{item.name}</span>
+        <h3
+          className="text-[16px] text-gray-800"
+          style={{ color: "transparent" }}
+        >
+          {item.shortcut}
+        </h3>
+      </div>
+    );
+  };
+
   return (
-    <div className="w-[900px] h-[700px] m-auto flex flex-col gap-[1rem] overflow-y-scroll">
-      <div className="flex gap-[10px] items-center">
+    <div className="w-[900px] h-[700px] m-auto flex flex-col">
+      <div className="flex justify-between items-center p-4 border-b">
         <h1 className="text-2xl font-bold">단축키 정보</h1>
-        <p>현재 활성화된 앱: {activeApp}</p>
+        <p className="text-[#666]">
+          <span className="text-xl font-semibold bg-[#FE8E00] text-[#fff] py-2 px-5 rounded-full">
+            {activeApp}
+          </span>
+        </p>
       </div>
 
-      {error && <p className="text-center text-red-500">{error}</p>}
+      {error && <p className="text-center text-[#f00] p-4">{error}</p>}
 
       {menuData.length > 0 ? (
-        <ul className="list-none h-[700px] overflow-y-auto">
-          {menuData.map((item, index) => (
-            <li key={index} className="p-4 border-b">
-              <strong className="text-lg text-black">{item.name}</strong>
-              <div className="text-sm text-gray-600">{item.shortcut}</div>
-              <div className="text-xs text-gray-500">{item.icon}</div>
-            </li>
-          ))}
-        </ul>
+        <div className="flex-1 overflow-y-auto bg-white">
+          <div className="grid grid-cols-2 divide-y divide-gray-200">
+            {menuData.map((item, index) => (
+              <div key={index}>{renderMenuItem(item)}</div>
+            ))}
+          </div>
+        </div>
       ) : (
-        <p className="text-center text-gray-500">
+        <p className="text-center text-[#666] p-4">
           활성화된 앱에 대한 단축키 정보가 없습니다.
         </p>
       )}

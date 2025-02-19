@@ -8,23 +8,18 @@ function parseMenuItems(stdout) {
       .trim()
       .split(",")
       .map((item) => {
-        const [name, shortcut, icon] = item.split(": ");
+        const [name, shortcut] = item.split(": ");
         return {
           name: name.trim(),
-          shortcut: shortcut ? shortcut.trim() : "No Shortcut",
-          icon: icon ? icon.trim() : "No Icon",
+          shortcut: shortcut ? shortcut.replace(/\s*/, "").trim() : "",
         };
       });
 
     return menuItems
-      .filter((item) => item.name !== "shortcut:" && item.name !== "icon:")
+      .filter((item) => item.name)
       .map((item) => ({
         name: item.name,
-        shortcut: convertShortcutToUnicode(item.shortcut),
-        icon:
-          item.icon === "No Icon"
-            ? "No Icon"
-            : convertShortcutToUnicode(item.icon),
+        shortcut: item.shortcut,
       }));
   } catch (error) {
     console.error("메뉴 항목 파싱 중 오류 발생:", error);
@@ -32,170 +27,176 @@ function parseMenuItems(stdout) {
   }
 }
 
+function getMacMenuBarInfo(activeApp) {
+  return new Promise((resolve, reject) => {
+    if (!activeApp) {
+      reject(new Error("활성 앱 이름이 제공되지 않았습니다."));
+      return;
+    }
+    const appleScript = `
+          tell application "System Events"
+          tell process "${activeApp}"
+              set menuItems to {}
+              try
+                  set menuBarItems to menu bar items of menu bar 1
+                  repeat with menuItem in menuBarItems
+                      set menuItemName to name of menuItem
+                      set subMenuItems to menu items of menu 1 of menuItem
+                      repeat with subItem in subMenuItems
+                          set subItemName to name of subItem
+                          set subItemShortcut to ""
+
+                          try
+                              set shortcutModifiers to ""
+
+                              -- Modifier keys 비트 플래그 확인
+                              if exists (attribute "AXMenuItemCmdModifiers" of subItem) then
+                                  set modValue to value of attribute "AXMenuItemCmdModifiers" of subItem
+                                  if modValue is not missing value then
+                                      set modNum to modValue as number
+
+                                      if (modNum div 1 mod 2 is 1) then
+                                          set shortcutModifiers to shortcutModifiers & "⌘"
+                                      end if
+
+                                      if (modNum div 2 mod 2 is 1) then
+                                          set shortcutModifiers to shortcutModifiers & "⌥"
+                                      end if
+
+                                      if (modNum div 4 mod 2 is 1) then
+                                          set shortcutModifiers to shortcutModifiers & "⇧"
+                                      end if
+
+                                      if (modNum div 8 mod 2 is 1) then
+                                          set shortcutModifiers to shortcutModifiers & "⌃"
+                                      end if
+
+                                      if (modNum div 16 mod 2 is 1) then
+                                          set shortcutModifiers to shortcutModifiers & "fn"
+                                      end if
+                                  end if
+                              end if
+
+                              set commandChar to missing value
+                              if exists (attribute "AXMenuItemCmdChar" of subItem) then
+                                  set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
+                              end if
+
+                              if exists (attribute "AXMenuItemCmdVirtualKey" of subItem) then
+                                  set virtualKey to value of attribute "AXMenuItemCmdVirtualKey" of subItem
+                                  if virtualKey is not missing value and commandChar is missing value then
+                                      set commandChar to virtualKey
+                                  end if
+                              end if
+
+                              if commandChar is not missing value then
+                                  if shortcutModifiers is not "" then
+                                      set subItemShortcut to shortcutModifiers & commandChar
+                                  else
+                                      set subItemShortcut to commandChar
+                                  end if
+                              end if
+
+                          end try
+
+                          -- 단축키가 있는 경우에만 menuItems에 추가
+                          if subItemShortcut is not "" then
+                              set end of menuItems to {name:(menuItemName & " > " & subItemName), shortcut:subItemShortcut}
+                          end if
+                      end repeat
+                  end repeat
+                  return menuItems
+              on error errMsg
+                  return "Error: " & errMsg
+              end try
+          end tell
+      end tell
+    `;
+    exec(
+      `osascript -e "${appleScript.replace(/"/g, '\\"')}"`,
+      (error, stdout) => {
+        if (error) {
+          reject(new Error(`AppleScript 실행 중 오류 발생: ${error.message}`));
+          return;
+        }
+
+        try {
+          const menuItems = parseMenuItems(stdout);
+          resolve(menuItems);
+        } catch (parseError) {
+          reject(
+            new Error(`메뉴 항목 파싱 중 오류 발생: ${parseError.message}`)
+          );
+        }
+      }
+    );
+  });
+}
+
 function getActiveApp() {
   return new Promise((resolve, reject) => {
     const activeAppScript = `
       tell application "System Events"
-        try
-          set activeApp to name of first process whose frontmost is true
-          return activeApp
-        on error
-          return "No Active App"
-        end try
-      end tell
-    `;
-    exec(`osascript -e '${activeAppScript}'`, (error, stdout, stderr) => {
-      if (error || stderr) {
-        console.error("AppleScript 오류 발생:", error || stderr);
-        reject("활성 앱 확인 오류: " + (stderr || error));
-        return;
-      }
+        set frontApp to first application process whose frontmost is true
+        return name of frontApp
+      end tell`;
 
-      const activeApp = stdout.trim();
-      if (!activeApp || activeApp === "No Active App") {
-        reject("활성화된 앱을 찾을 수 없습니다.");
-      } else {
-        resolve(activeApp);
+    exec(
+      `osascript -e "${activeAppScript.replace(/"/g, '\\"')}"`,
+      (error, stdout) => {
+        if (error) {
+          reject(new Error(`활성 앱 확인 오류: ${error.message}`));
+          return;
+        }
+
+        const activeApp = stdout.trim();
+        if (!activeApp) {
+          reject(new Error("활성화된 앱을 찾을 수 없습니다."));
+        } else {
+          resolve(activeApp);
+        }
       }
-    });
+    );
   });
-}
-
-function getMacMenuBarInfo(activeApp) {
-  return new Promise((resolve, reject) => {
-    const appleScript = `
-      tell application "System Events"
-          tell process "${activeApp}"
-              set menuItems to {}
-              try
-                set menuBarItems to menu bar items of menu bar 1
-                repeat with menuItem in menuBarItems
-                    set menuItemName to name of menuItem
-                    set subMenuItems to menu items of menu 1 of menuItem
-                    repeat with subItem in subMenuItems
-                        set subItemName to name of subItem
-                        set subItemShortcut to ""
-
-                        try
-                          set shortcutModifiers to ""
-                          set modValue to value of attribute "AXMenuItemCmdModifiers" of subItem
-
-                          if (modValue contains 1) then set shortcutModifiers to shortcutModifiers & "⌘ + "  -- Command
-                          if (modValue contains 2) then set shortcutModifiers to shortcutModifiers & "⌥ + "  -- Option
-                          if (modValue contains 4) then set shortcutModifiers to shortcutModifiers & "⇧ + "  -- Shift
-                          if (modValue contains 8) then set shortcutModifiers to shortcutModifiers & "⌃ + "  -- Control
-                          if (modValue contains 16) then set shortcutModifiers to shortcutModifiers & "Fn + "   -- Function (Fn)
-
-                          set commandChar to (value of attribute "AXMenuItemCmdChar" of subItem)
-                          if commandChar is not missing value then
-                            set subItemShortcut to shortcutModifiers & commandChar
-                          end if
-                        end try
-
-                        set subItemIcon to "No Icon"
-                        try
-                          set subItemIcon to image of subItem
-                        on error
-                          set subItemIcon to "No Icon"
-                        end try
-
-                        -- 서브 아이템의 단축키가 존재할 경우만 메뉴 항목에 추가
-                        if subItemShortcut is not "" then
-                          set end of menuItems to {name: (menuItemName & " > " & subItemName), shortcut: subItemShortcut, icon: subItemIcon}
-                        else
-                          set end of menuItems to {name: (menuItemName & " > " & subItemName), icon: subItemIcon}
-                        end if
-                    end repeat
-                end repeat
-              on error errMsg
-                return "Error: " & errMsg
-              end try
-              return menuItems
-          end tell
-      end tell
-    `;
-    exec(`osascript -e '${appleScript}'`, (error, stdout, stderr) => {
-      if (error || stderr) {
-        console.error("AppleScript 실행 중 오류 발생:", stderr || error);
-        reject(
-          new Error("AppleScript 실행 중 오류 발생: " + (stderr || error))
-        );
-        return;
-      }
-      const menuItems = parseMenuItems(stdout);
-      if (!menuItems || menuItems.length === 0) {
-        reject("메뉴 항목을 가져오지 못했습니다.");
-      } else {
-        resolve(menuItems);
-      }
-    });
-  });
-}
-
-function convertShortcutToUnicode(shortcut) {
-  const iconUnicodeMap = {
-    "⌘": "U+2318",
-    "⇧": "U+21E7",
-    "⌥": "U+2325",
-    "⌃": "U+2303",
-    "⌫": "U+232B",
-    fn: "U+F170",
-    ArrowUp: "U+2191",
-    ArrowDown: "U+2193",
-    ArrowLeft: "U+2190",
-    ArrowRight: "U+2192",
-  };
-
-  if (shortcut === "No Shortcut") return "No Shortcut";
-  return shortcut
-    .split("+")
-    .map((key) => key.trim())
-    .map(
-      (key) =>
-        iconUnicodeMap[key] ||
-        `U+${key.charCodeAt(0).toString(16).toUpperCase()}`
-    )
-    .join(" + ");
-}
-function setupIpcHandlers() {
-  if (!ipcMain.listenerCount("get-menu-info")) {
-    ipcMain.handle("get-menu-info", async (_, activeApp) => {
-      try {
-        return await getMacMenuBarInfo(activeApp);
-      } catch (error) {
-        console.error("메뉴 정보를 가져오기 실패:", error);
-        throw error;
-      }
-    });
-  }
-
-  if (!ipcMain.listenerCount("get-active-app")) {
-    ipcMain.handle("get-active-app", async () => {
-      try {
-        return await getActiveApp();
-      } catch (error) {
-        console.error("활성화된 앱 확인 실패:", error);
-        throw error;
-      }
-    });
-  }
 }
 
 function setupKeyboardListeners() {
   globalShortcut.register("Tab", async () => {
     try {
       const activeApp = await getActiveApp();
+      if (!activeApp) {
+        console.error("활성화된 앱을 찾을 수 없습니다.");
+        return;
+      }
       const menuItems = await getMacMenuBarInfo(activeApp);
-      console.log("현재 활성화된 앱 메뉴 항목:", menuItems);
+      console.log("현재 활성화된 앱:", activeApp);
+      console.log("메뉴 항목:", menuItems);
     } catch (error) {
       console.error("Tab 키 입력 중 오류 발생:", error);
     }
   });
 }
 
+function setupIpcHandlers() {
+  ipcMain.handle("get-menu-info", async (_, activeApp) => {
+    if (!activeApp) {
+      throw new Error("활성 앱 이름이 제공되지 않았습니다.");
+    }
+    return await getMacMenuBarInfo(activeApp);
+  });
+
+  ipcMain.handle("get-active-app", async () => {
+    const activeApp = await getActiveApp();
+    if (!activeApp) {
+      throw new Error("활성화된 앱을 찾을 수 없습니다.");
+    }
+    return activeApp;
+  });
+}
+
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 1000,
+    width: 930,
     height: 900,
     show: false,
     webPreferences: {
@@ -226,6 +227,7 @@ app.whenReady().then(() => {
   setupIpcHandlers();
   setupKeyboardListeners();
 });
+
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
