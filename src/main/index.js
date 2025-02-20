@@ -193,7 +193,7 @@ function setupKeyboardListeners() {
 // 메인 윈도우 생성
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 930,
+    width: 920,
     height: 900,
     show: false,
     webPreferences: {
