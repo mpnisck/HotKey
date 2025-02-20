@@ -7,17 +7,18 @@ function Info() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleStart = async () => {
+  const handleStart = () => {
     setIsLoading(true);
     try {
-      const activeAppName = await window.api.invoke("get-active-app");
-      if (!activeAppName || activeAppName === "No Active App") {
-        throw new Error("현재 활성화된 앱을 찾을 수 없습니다");
-      }
-      navigate("/hotkey", { state: { activeApp: activeAppName } });
+      navigate("/hotkey", {
+        state: {
+          initialMessage:
+            "Tab 키를 눌러 현재 활성화된 앱의 단축키를 확인하세요.",
+        },
+      });
     } catch (error) {
-      console.error("활성화된 앱 가져오는 중 오류 발생:", error);
-      alert("앱을 실행하는 중 오류가 발생");
+      console.log("페이지 이동 중 오류 발생:", error);
+      alert("앱을 실행하는 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +119,9 @@ function Info() {
           </div>
 
           <button
-            className={`w-[95%] h-[50px] rounded-full m-auto text-2xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00] ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`w-[95%] h-[50px] rounded-full m-auto text-2xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00] ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             onClick={handleStart}
             disabled={isLoading}
           >
