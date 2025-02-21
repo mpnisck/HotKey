@@ -8,6 +8,7 @@ function Hotkey() {
 
   const fetchActiveApp = async () => {
     try {
+      setIsLoading(true);
       const activeApp = await window.api.invoke("get-active-app");
       console.log("Fetched Active App:", activeApp);
       setActiveApp(activeApp || "활성화된 앱 정보를 찾을 수 없습니다.");
@@ -16,12 +17,13 @@ function Hotkey() {
       console.error("Error in fetchActiveApp:", error);
       setError("활성화된 앱을 가져오는 중에 오류가 발생했습니다.");
       return null;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const processMenuItems = (items) => {
     console.log("Processing items:", items);
-
     const processed = items.reduce((acc, item) => {
       const [category] = item.name.split(" > ");
       if (!acc[category]) {
@@ -46,6 +48,7 @@ function Hotkey() {
     if (!currentApp) return;
 
     try {
+      setIsLoading(true);
       const menuItems = await window.api.invoke("get-menu-info", currentApp);
       console.log("Fetched menu items:", menuItems);
 
@@ -61,6 +64,8 @@ function Hotkey() {
       console.error("Error in fetchMenuItems:", error);
       setError("메뉴 항목을 가져오는 중에 오류가 발생했습니다.");
       setMenuData({});
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,10 +74,12 @@ function Hotkey() {
       event.preventDefault();
       setIsLoading(true);
       try {
-        const currentApp = await fetchActiveApp(); // 현재 활성화된 앱을 가져옵니다.
+        const currentApp = await fetchActiveApp();
         console.log("Current App in handleTabKey:", currentApp);
         if (currentApp) {
-          await fetchMenuItems(currentApp); // 메뉴 항목을 가져옵니다.
+          await fetchMenuItems(currentApp);
+        } else {
+          setError("활성화된 앱이 없습니다.");
         }
       } catch (error) {
         console.error("Error in handleTabKey:", error);
