@@ -17,7 +17,6 @@ function Info() {
         },
       });
     } catch (error) {
-      console.log("페이지 이동 중 오류 발생:", error);
       alert("앱을 실행하는 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);

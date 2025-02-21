@@ -10,11 +10,9 @@ function Hotkey() {
     try {
       setIsLoading(true);
       const activeApp = await window.api.invoke("get-active-app");
-      console.log("Fetched Active App:", activeApp);
       setActiveApp(activeApp || "활성화된 앱 정보를 찾을 수 없습니다.");
       return activeApp;
     } catch (error) {
-      console.error("Error in fetchActiveApp:", error);
       setError("활성화된 앱을 가져오는 중에 오류가 발생했습니다.");
       return null;
     } finally {
@@ -23,7 +21,6 @@ function Hotkey() {
   };
 
   const processMenuItems = (items) => {
-    console.log("Processing items:", items);
     const processed = items.reduce((acc, item) => {
       const [category] = item.name.split(" > ");
       if (!acc[category]) {
@@ -50,7 +47,6 @@ function Hotkey() {
     try {
       setIsLoading(true);
       const menuItems = await window.api.invoke("get-menu-info", currentApp);
-      console.log("Fetched menu items:", menuItems);
 
       if (Array.isArray(menuItems) && menuItems.length > 0) {
         const groupedItems = processMenuItems(menuItems);
@@ -75,7 +71,6 @@ function Hotkey() {
       setIsLoading(true);
       try {
         const currentApp = await fetchActiveApp();
-        console.log("Current App in handleTabKey:", currentApp);
         if (currentApp) {
           await fetchMenuItems(currentApp);
         } else {
