@@ -6,10 +6,25 @@ import logoImgUrl from "../assets/hotkey_icon.png";
 function Info() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [activeApp, setActiveApp] = useState("");
 
-  const handleStart = () => {
+  const fetchActiveApp = async () => {
+    try {
+      const activeApp = await window.api.invoke("get-active-app");
+      return activeApp || "활성화된 앱 정보를 찾을 수 없습니다.";
+    } catch (error) {
+      console.error("활성화된 앱을 가져오는 중 오류가 발생했습니다.", error);
+      return null;
+    }
+  };
+
+  const handleStart = async () => {
     setIsLoading(true);
     try {
+      const currentApp = await fetchActiveApp();
+      if (currentApp) {
+        setActiveApp(currentApp);
+      }
       navigate("/hotkey", {
         state: {
           initialMessage:
@@ -17,7 +32,7 @@ function Info() {
         },
       });
     } catch (error) {
-      alert("앱을 실행하는 중 오류가 발생했습니다.");
+      console.error("앱을 실행하는 중 오류가 발생했습니다.", error);
     } finally {
       setIsLoading(false);
     }
@@ -126,6 +141,12 @@ function Info() {
           >
             {isLoading ? "로딩 중..." : "사용 시작"}
           </button>
+
+          {activeApp && (
+            <div className="mt-4 text-center text-lg text-[#333]">
+              현재 활성화된 앱: {activeApp}
+            </div>
+          )}
         </div>
       </div>
     </div>

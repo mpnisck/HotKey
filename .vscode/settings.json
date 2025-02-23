@@ -5,5 +5,9 @@
     "strings": true
   },
   "css.validate": false,
-  "editor.inlineSuggest.enabled": true
+  "editor.inlineSuggest.enabled": true,
+  "window.zoomLevel": -1,
+  "editor.mouseWheelZoom": false,
+  "editor.minimap.sectionHeaderFontSize": 9,
+  "screencastMode.fontSize": 56
 }

@@ -8,6 +8,8 @@ body {
   background-size: cover;
   user-select: none;
   padding: 20px 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
 }
 html,
 applet,
