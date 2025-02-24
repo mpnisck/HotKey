@@ -48,9 +48,9 @@ function Info() {
           className="block w-[70px] h-[25px]"
         />
       </div>
-      <div className="contentWrap w-fit flex flex-col">
-        <div className="flex items-center gap-[0.3rem] my-[1rem]">
-          <h1 className="flex justify-center items-center w-[20%] h-[40px] bg-[#ff8c00] text-[#fff] text-lg rounded-full">
+      <div className="contentWrap w-fit flex flex-col tracking-tighter">
+        <div className="flex items-center gap-[0.5rem] my-[1rem]">
+          <h1 className="flex justify-center items-center w-[25%] h-[40px] bg-[#ff8c00] text-[#fff] text-lg rounded-full">
             사용자 가이드
           </h1>
           <h2 className="font-medium text-[#FF8C00]">
@@ -59,8 +59,8 @@ function Info() {
         </div>
 
         <div>
-          <ul className="!list-disc leading-7 text-[#777] mb-[1.4rem]">
-            <li className="!list-none">
+          <ul className="list-disc leading-7 text-[#777] mb-[1.4rem]">
+            <li className="list-none">
               <h3 className="text-lg text-[#000] font-bold py-[0.5rem]">
                 개인정보 보호 설정 해제
               </h3>
@@ -75,17 +75,19 @@ function Info() {
               왼쪽 메뉴에서 일반을 클릭하고, 여러 옵션을 확인해 볼까요?
             </li>
             <li className="ml-[1rem]">
-              예를 들어, 앱이 내 정보에 액세스하도록 허용을 끄거나, 위치나 음성
-              인식 등을 비활성화할 수 있어요!
+              예를 들어, 앱이 내 정보에 액세스하도록 허용을 끄거나,
+              <br />
+              위치나 음성인식 등을 비활성화할 수 있어요!
             </li>
             <li className="ml-[1rem]">
-              진단 및 데이터 항목에서 기본 설정을 선택하거나 모든 데이터 공유
-              설정을 변경도 할 수 있어요!
+              진단 및 데이터 항목에서 기본 설정을 선택하거나
+              <br />
+              모든 데이터 공유 설정을 변경도 할 수 있어요!
             </li>
           </ul>
 
-          <ul className="!list-disc leading-7 text-[#777] mb-[1.4rem]">
-            <li className="!list-none">
+          <ul className="list-disc leading-7 text-[#777] mb-[1.4rem]">
+            <li className="list-none">
               <h3 className="text-lg text-[#000] font-bold py-[0.5rem]">
                 앱 권한 관리
               </h3>
@@ -100,8 +102,8 @@ function Info() {
             </li>
           </ul>
 
-          <ul className="!list-disc leading-7 text-[#777] mb-[1.4rem]">
-            <li className="!list-none">
+          <ul className="list-disc leading-7 text-[#777] mb-[1.4rem]">
+            <li className="list-none">
               <h3 className="text-lg text-[#000] font-bold py-[0.5rem]">
                 macOS에서 개인정보 보호 해제
               </h3>
@@ -125,14 +127,15 @@ function Info() {
             </li>
             <li className="ml-[1rem]">
               전체 디스크 접근 권한을 설정하려면, 시스템 환경설정 &gt; 보안 및
-              개인정보 보호 &gt; 전체 디스크 접근에서 앱별로 권한을 허용/거부할
-              수 있어요!
+              개인정보 보호 &gt;
+              <br />
+              전체 디스크 접근에서 앱별로 권한을 허용/거부할 수 있어요!
             </li>
           </ul>
         </div>
 
         <button
-          className={`w-[95%] h-[50px] rounded-full mx-auto my-[30px] text-2xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00] ${
+          className={`w-[95%] h-[50px] rounded-full mx-auto my-[10px] text-2xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00] ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           onClick={handleStart}

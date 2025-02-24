@@ -5,6 +5,14 @@ function Hotkey() {
   const [activeApp, setActiveApp] = useState("아직 활성화된 앱이 없습니다.");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCommandPressed, setIsCommandPressed] = useState(false);
+  const [isOptionPressed, setIsOptionPressed] = useState(false);
+  const [isControlPressed, setIsControlPressed] = useState(false);
+  const [isShiftPressed, setIsShiftPressed] = useState(false);
+  const [isBackspacePressed, setIsBackspacePressed] = useState(false);
+  const [isFnPressed, setIsFnPressed] = useState(false);
+  const [isKeyActive, setIsKeyActive] = useState(false);
+  const [pressedKeys, setPressedKeys] = useState(new Set());
 
   const fetchActiveApp = async () => {
     try {
@@ -57,7 +65,6 @@ function Hotkey() {
         setMenuData({});
       }
     } catch (error) {
-      console.error("Error in fetchMenuItems:", error);
       setError("메뉴 항목을 가져오는 중에 오류가 발생했습니다.");
       setMenuData({});
     } finally {
@@ -77,7 +84,6 @@ function Hotkey() {
           setError("활성화된 앱이 없습니다.");
         }
       } catch (error) {
-        console.error("Error in handleTabKey:", error);
         setError("데이터를 가져오는 중에 오류가 발생했습니다.");
       } finally {
         setIsLoading(false);
@@ -85,10 +91,82 @@ function Hotkey() {
     }
   };
 
+  const handleKeyDown = (event) => {
+    setPressedKeys((prev) => new Set(prev).add(event.key.toLowerCase()));
+
+    if (event.key === "Meta") {
+      setIsCommandPressed(true);
+      setIsKeyActive(true);
+    }
+    if (event.key === "Alt") {
+      setIsOptionPressed(true);
+      setIsKeyActive(true);
+    }
+    if (event.key === "Control") {
+      setIsControlPressed(true);
+      setIsKeyActive(true);
+    }
+    if (event.key === "Shift") {
+      setIsShiftPressed(true);
+      setIsKeyActive(true);
+    }
+    if (event.key === "Backspace") {
+      setIsBackspacePressed(true);
+      setIsKeyActive(true);
+    }
+
+    if (event.key.toLowerCase() === "fn" || pressedKeys.has("fn")) {
+      setIsFnPressed(true);
+      setIsKeyActive(true);
+    }
+  };
+
+  const handleKeyUp = (event) => {
+    setPressedKeys((prev) => {
+      const newKeys = new Set(prev);
+      newKeys.delete(event.key.toLowerCase());
+      return newKeys;
+    });
+
+    if (event.key === "Meta") {
+      setIsCommandPressed(false);
+    }
+    if (event.key === "Alt") {
+      setIsOptionPressed(false);
+    }
+    if (event.key === "Control") {
+      setIsControlPressed(false);
+    }
+    if (event.key === "Shift") {
+      setIsShiftPressed(false);
+    }
+    if (event.key === "Backspace") {
+      setIsBackspacePressed(false);
+    }
+    if (event.key === "fn") {
+      setIsFnPressed(false);
+    }
+
+    if (
+      !isCommandPressed &&
+      !isOptionPressed &&
+      !isControlPressed &&
+      !isShiftPressed &&
+      !isBackspacePressed &&
+      !isFnPressed
+    ) {
+      setIsKeyActive(false);
+    }
+  };
+
   useEffect(() => {
     window.addEventListener("keydown", handleTabKey);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
     return () => {
       window.removeEventListener("keydown", handleTabKey);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
 
@@ -101,7 +179,6 @@ function Hotkey() {
           await fetchMenuItems(currentApp);
         }
       } catch (error) {
-        console.error("Error in initial load:", error);
         setError("초기 데이터를 불러오는 중에 오류가 발생했습니다.");
       } finally {
         setIsLoading(false);
@@ -110,6 +187,24 @@ function Hotkey() {
 
     initData();
   }, []);
+
+  const filteredMenuData = isKeyActive
+    ? Object.entries(menuData).reduce((acc, [category, items]) => {
+        const filteredItems = items.filter(
+          (item) =>
+            (isCommandPressed && item.shortcut.includes("⌘")) ||
+            (isOptionPressed && item.shortcut.includes("⌥")) ||
+            (isControlPressed && item.shortcut.includes("⌃")) ||
+            (isShiftPressed && item.shortcut.includes("⇧")) ||
+            (isBackspacePressed && item.shortcut.includes("⌫")) ||
+            (isFnPressed && item.shortcut.includes("Fn"))
+        );
+        if (filteredItems.length > 0) {
+          acc[category] = filteredItems;
+        }
+        return acc;
+      }, {})
+    : menuData;
 
   return (
     <div className="w-[95%] h-[800px] m-auto flex flex-col">
@@ -135,9 +230,9 @@ function Hotkey() {
 
       {error && <div className="text-center text-[#f00] p-4"> {error} </div>}
 
-      {!isLoading && !error && Object.keys(menuData).length > 0 && (
+      {!isLoading && !error && Object.keys(filteredMenuData).length > 0 && (
         <div className="flex-1 overflow-y-auto p-4">
-          {Object.entries(menuData).map(([category, items]) => (
+          {Object.entries(filteredMenuData).map(([category, items]) => (
             <div key={category} className="mb-6">
               <h2 className="text-lg font-semibold mb-5 bg-gray-100 p-3 rounded">
                 {category}
@@ -149,7 +244,13 @@ function Hotkey() {
                     className="flex justify-between items-center p-3 bg-white rounded"
                   >
                     <span className="text-[#333] text-sm">{item.name}</span>
-                    <code className="text-lg tracking-wider bg-[#333] text-[#fff] hover:bg-[#fe8e00] transition-all border-gray-100 block px-4 py-1 rounded-md">
+                    <code
+                      className={`text-lg tracking-wider block px-4 py-1 rounded-md ${
+                        isKeyActive
+                          ? "bg-[#FE8E00] text-[#fff]"
+                          : "bg-[#333] text-[#fff]"
+                      }`}
+                    >
                       {item.shortcut || "-"}
                     </code>
                   </div>
@@ -167,6 +268,10 @@ function Hotkey() {
           </p>
         </div>
       )}
+
+      <div className="fixed bottom-[10px] left-[10px] text-[#333]">
+        현재 눌린 키: {Array.from(pressedKeys).join(", ")}
+      </div>
     </div>
   );
 }

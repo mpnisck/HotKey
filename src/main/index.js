@@ -205,13 +205,13 @@ function slideInWindow(mainWindow) {
       clearInterval(interval);
     } else {
       x += 10;
-      mainWindow.setBounds({ x, y: 0, width: 700, height: 940 });
+      mainWindow.setBounds({ x, y: 0, width: 610, height: 940 });
     }
   }, 6);
 }
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 700,
+    width: 610,
     height: 940,
     x: 0,
     y: 0,
