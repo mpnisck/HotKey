@@ -39,7 +39,7 @@ function Info() {
   };
 
   return (
-    <div className="w-[95%] h-[700px] m-auto flex flex-col gap-[1rem]">
+    <div className="w-[95%] h-[900px] m-auto flex flex-col justify-center gap-[1rem]">
       <div className="flex gap-[10px] items-center">
         <img src={logoImgUrl} alt="HotKey Logo" className="block w-[60px]" />
         <img

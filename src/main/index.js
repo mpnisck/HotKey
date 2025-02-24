@@ -197,22 +197,36 @@ function setupKeyboardListeners() {
     }
   });
 }
-
+function slideInWindow(mainWindow) {
+  let x = -800;
+  const targetX = 0;
+  const interval = setInterval(() => {
+    if (x >= targetX) {
+      clearInterval(interval);
+    } else {
+      x += 10;
+      mainWindow.setBounds({ x, y: 0, width: 700, height: 940 });
+    }
+  }, 6);
+}
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 768,
+    width: 700,
     height: 940,
     x: 0,
     y: 0,
+    frame: false,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
+      contextIsolation: true,
       preload: join(__dirname, "../preload/index.js"),
     },
   });
 
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
+    slideInWindow(mainWindow);
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
