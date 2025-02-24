@@ -200,12 +200,13 @@ function setupKeyboardListeners() {
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 920,
-    height: 900,
-    show: false,
+    width: 768,
+    height: 940,
+    x: 0,
+    y: 0,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: true,
+      contextIsolation: false,
       preload: join(__dirname, "../preload/index.js"),
     },
   });

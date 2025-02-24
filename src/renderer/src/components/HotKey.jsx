@@ -112,7 +112,7 @@ function Hotkey() {
   }, []);
 
   return (
-    <div className="w-[900px] h-[700px] m-auto flex flex-col">
+    <div className="w-[95%] h-[800px] m-auto flex flex-col">
       <div className="flex justify-between items-center p-7 bg-[#333] text-[#fff] rounded">
         <h1 className="text-2xl font-semibold">단축키 정보</h1>
         <p className="text-[#666]">
