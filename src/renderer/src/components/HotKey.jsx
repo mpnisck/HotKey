@@ -1,5 +1,51 @@
 import { useState, useEffect } from "react";
 
+const KeyboardIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="mr-2 text-[#FE8E00]"
+  >
+    <rect x="2" y="4" width="20" height="16" rx="2" ry="2" />
+    <line x1="6" y1="8" x2="6.01" y2="8" />
+    <line x1="10" y1="8" x2="10.01" y2="8" />
+    <line x1="14" y1="8" x2="14.01" y2="8" />
+    <line x1="18" y1="8" x2="18.01" y2="8" />
+    <line x1="8" y1="12" x2="16" y2="12" />
+  </svg>
+);
+
+const macBookProKeyboardLayout = [
+  [
+    "Esc",
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "F6",
+    "F7",
+    "F8",
+    "F9",
+    "F10",
+    "F11",
+    "F12",
+    "Delete",
+  ],
+  ["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Delete"],
+  ["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\"],
+  ["Caps Lock", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "Enter"],
+  ["Shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Shift"],
+  ["Fn", "Control", "Option", "Meta", "Space", "Meta", "Option", "Control"],
+];
+
 function Hotkey() {
   const [menuData, setMenuData] = useState({});
   const [activeApp, setActiveApp] = useState("아직 활성화된 앱이 없습니다.");
@@ -13,6 +59,7 @@ function Hotkey() {
   const [isFnPressed, setIsFnPressed] = useState(false);
   const [isKeyActive, setIsKeyActive] = useState(false);
   const [pressedKeys, setPressedKeys] = useState(new Set());
+  const [keyboardKeys, setKeyboardKeys] = useState(new Set());
 
   const fetchActiveApp = async () => {
     try {
@@ -92,27 +139,49 @@ function Hotkey() {
   };
 
   const handleKeyDown = (event) => {
-    setPressedKeys((prev) => new Set(prev).add(event.key.toLowerCase()));
+    const key = event.key.toUpperCase();
 
-    if (event.key === "Meta") {
+    if (event.metaKey) {
       setIsCommandPressed(true);
       setIsKeyActive(true);
     }
-    if (event.key === "Alt") {
-      setIsOptionPressed(true);
-      setIsKeyActive(true);
+
+    if (event.key === "Enter") {
+      setPressedKeys((prev) => new Set(prev).add("enter"));
+      setKeyboardKeys((prev) => new Set(prev).add("ENTER"));
     }
-    if (event.key === "Control") {
-      setIsControlPressed(true);
-      setIsKeyActive(true);
-    }
-    if (event.key === "Shift") {
-      setIsShiftPressed(true);
-      setIsKeyActive(true);
-    }
-    if (event.key === "Backspace") {
-      setIsBackspacePressed(true);
-      setIsKeyActive(true);
+
+    setPressedKeys((prev) => new Set(prev).add(event.key.toLowerCase()));
+    setKeyboardKeys((prev) => new Set(prev).add(key));
+
+    const modifierKeyMap = {
+      Meta: () => {
+        setIsCommandPressed(true);
+        setIsKeyActive(true);
+      },
+      Option: () => {
+        setIsOptionPressed(true);
+        setIsKeyActive(true);
+      },
+      Control: () => {
+        setIsControlPressed(true);
+        setIsKeyActive(true);
+      },
+      Shift: () => {
+        setIsShiftPressed(true);
+        setIsKeyActive(true);
+      },
+      Backspace: () => {
+        setIsBackspacePressed(true);
+        setIsKeyActive(true);
+      },
+      Enter: () => {
+        setIsKeyActive(true);
+      },
+    };
+
+    if (modifierKeyMap[event.key]) {
+      modifierKeyMap[event.key]();
     }
 
     if (event.key.toLowerCase() === "fn" || pressedKeys.has("fn")) {
@@ -122,29 +191,51 @@ function Hotkey() {
   };
 
   const handleKeyUp = (event) => {
+    const key = event.key.toUpperCase();
+
+    if (!event.metaKey) {
+      setIsCommandPressed(false);
+    }
+
+    if (event.key === "Enter") {
+      setPressedKeys((prev) => {
+        const newKeys = new Set(prev);
+        newKeys.delete("enter");
+        return newKeys;
+      });
+      setKeyboardKeys((prev) => {
+        const updated = new Set(prev);
+        updated.delete("ENTER");
+        return updated;
+      });
+    }
+
     setPressedKeys((prev) => {
       const newKeys = new Set(prev);
       newKeys.delete(event.key.toLowerCase());
       return newKeys;
     });
 
-    if (event.key === "Meta") {
-      setIsCommandPressed(false);
-    }
-    if (event.key === "Alt") {
-      setIsOptionPressed(false);
-    }
-    if (event.key === "Control") {
-      setIsControlPressed(false);
-    }
-    if (event.key === "Shift") {
-      setIsShiftPressed(false);
-    }
-    if (event.key === "Backspace") {
-      setIsBackspacePressed(false);
-    }
-    if (event.key === "fn") {
-      setIsFnPressed(false);
+    setKeyboardKeys((prev) => {
+      const updated = new Set(prev);
+      updated.delete(key);
+      return updated;
+    });
+
+    const modifierKeyMap = {
+      Meta: () => setIsCommandPressed(false),
+      Option: () => setIsOptionPressed(false),
+      Control: () => setIsControlPressed(false),
+      Shift: () => setIsShiftPressed(false),
+      Backspace: () => setIsBackspacePressed(false),
+      Enter: () => {
+        setIsKeyActive(false);
+      },
+      fn: () => setIsFnPressed(false),
+    };
+
+    if (modifierKeyMap[event.key]) {
+      modifierKeyMap[event.key]();
     }
 
     if (
@@ -157,6 +248,33 @@ function Hotkey() {
     ) {
       setIsKeyActive(false);
     }
+  };
+
+  const getKeyStyle = (key) => {
+    const isPressed = keyboardKeys.has(key.toUpperCase());
+    const specialKeys = [
+      "ESC",
+      "TAB",
+      "CAPS LOCK",
+      "SHIFT",
+      "FN",
+      "CONTROL",
+      "OPTION",
+      "META",
+      "ENTER",
+      "DELETE",
+      "SPACE",
+    ];
+
+    if (specialKeys.includes(key.toUpperCase())) {
+      return isPressed
+        ? "bg-gray-600 text-white shadow-lg scale-105"
+        : "bg-gray-200 text-gray-800 hover:bg-gray-300";
+    }
+
+    return isPressed
+      ? "bg-[#FE8E00] text-white shadow-lg scale-105"
+      : "bg-white text-gray-800 border border-gray-300 hover:bg-gray-100";
   };
 
   useEffect(() => {
@@ -197,7 +315,8 @@ function Hotkey() {
             (isControlPressed && item.shortcut.includes("⌃")) ||
             (isShiftPressed && item.shortcut.includes("⇧")) ||
             (isBackspacePressed && item.shortcut.includes("⌫")) ||
-            (isFnPressed && item.shortcut.includes("Fn"))
+            (isFnPressed && item.shortcut.includes("Fn")) ||
+            (pressedKeys.has("enter") && item.shortcut.includes("⏎"))
         );
         if (filteredItems.length > 0) {
           acc[category] = filteredItems;
@@ -215,6 +334,96 @@ function Hotkey() {
             {activeApp}
           </span>
         </p>
+      </div>
+
+      <div className="bg-white shadow-md rounded-lg p-4 mt-4">
+        <div className="flex items-center mb-4">
+          <KeyboardIcon />
+          <h2 className="text-xl font-semibold">MacBook Pro 키보드</h2>
+        </div>
+
+        <div
+          className="
+            bg-gray-100
+            rounded-xl
+            p-4
+            shadow-inner
+            border
+            border-gray-200
+          "
+        >
+          {macBookProKeyboardLayout.map((row, rowIndex) => (
+            <div
+              key={rowIndex}
+              className={`
+                flex gap-1 justify-center mb-1
+                ${rowIndex === 0 ? "mb-2" : ""}
+                ${rowIndex === 5 ? "mt-2" : ""}
+              `}
+            >
+              {row.map((key) => {
+                const isSpecialKey = [
+                  "Esc",
+                  "Tab",
+                  "Caps Lock",
+                  "Shift",
+                  "Fn",
+                  "Control",
+                  "Option",
+                  "Meta",
+                  "Enter",
+                  "Delete",
+                  "Space",
+                ].includes(key);
+
+                const specialKeyWidths = {
+                  Esc: "w-16",
+                  Tab: "w-20",
+                  "Caps Lock": "w-24",
+                  Shift: "w-24",
+                  Enter: "w-24",
+                  Space: "w-64",
+                  Control: "w-20",
+                  Option: "w-20",
+                  Meta: "w-20",
+                };
+
+                return (
+                  <div
+                    key={key}
+                    className={`
+                      ${specialKeyWidths[key] || "w-12"}
+                      h-10
+                      rounded-md
+                      text-center
+                      flex
+                      items-center
+                      justify-center
+                      font-medium
+                      cursor-default
+                      transition-all
+                      ease-in-out
+                      ${getKeyStyle(key)}
+                      ${isSpecialKey ? "text-xs" : "text-sm"}
+                    `}
+                  >
+                    {key === "Meta"
+                      ? "⌘"
+                      : key === "Option"
+                        ? "⌥"
+                        : key === "Control"
+                          ? "⌃"
+                          : key === "Delete"
+                            ? "⌫"
+                            : key === "Enter"
+                              ? "⏎"
+                              : key}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
 
       {isLoading && (
