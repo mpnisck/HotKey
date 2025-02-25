@@ -168,18 +168,28 @@ end tell
 
 function setupIpcHandlers() {
   ipcMain.handle("get-menu-info", async (_, activeApp) => {
-    if (!activeApp) {
-      throw new Error("활성 앱 이름이 제공되지 않았습니다.");
+    try {
+      if (!activeApp) {
+        throw new Error("활성 앱 이름이 제공되지 않았습니다.");
+      }
+      return await getMacMenuBarInfo(activeApp);
+    } catch (error) {
+      console.error("get-menu-info 오류:", error);
+      throw error;
     }
-    return await getMacMenuBarInfo(activeApp);
   });
 
   ipcMain.handle("get-active-app", async () => {
-    const activeApp = await getActiveApp();
-    if (!activeApp) {
-      throw new Error("활성화된 앱을 찾을 수 없습니다.");
+    try {
+      const activeApp = await getActiveApp();
+      if (!activeApp) {
+        throw new Error("활성화된 앱을 찾을 수 없습니다.");
+      }
+      return activeApp;
+    } catch (error) {
+      console.error("get-active-app 오류:", error);
+      throw error;
     }
-    return activeApp;
   });
 }
 

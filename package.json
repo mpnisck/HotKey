@@ -14,7 +14,7 @@
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
-    "build:mac": "npm run build && electron-builder --mac",
+    "build:mac": "npm run build && electron-builder build --mac --arm64",
     "build:linux": "npm run build && electron-builder --linux",
     "prepare": "husky install"
   },
@@ -46,5 +46,24 @@
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "build": {
+    "appId": "com.hotkey.app",
+    "productName": "HotKey",
+    "files": [
+      "dist/**/*",
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "icon": "build/icon.png"
+    }
   }
 }
