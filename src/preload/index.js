@@ -6,9 +6,7 @@ contextBridge.exposeInMainWorld("api", {
 
 ipcRenderer
   .invoke("get-menu-info")
-  .then((response) => {
-    console.log(response);
-  })
+  .then(() => {})
   .catch((error) => {
     console.error("데이터 invoke 실패", error);
   });
