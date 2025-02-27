@@ -2,34 +2,6 @@ import { app, shell, BrowserWindow, globalShortcut, ipcMain } from "electron";
 import { join } from "path";
 import { exec } from "child_process";
 
-function parseMenuItems(stdout) {
-  try {
-    const items = stdout.trim().split(",");
-    const menuItems = [];
-
-    for (let i = 0; i < items.length; i += 2) {
-      if (items[i] && items[i + 1]) {
-        const name = items[i].trim();
-        const shortcut = items[i + 1].trim();
-
-        if (
-          name.startsWith("name:") &&
-          isValidMenuItem(name.replace(/^name:/, "").trim())
-        ) {
-          menuItems.push({
-            name: name.replace(/^name:/, "").trim(),
-            shortcut: shortcut.replace(/^shortcut:/, "").trim(),
-          });
-        }
-      }
-    }
-    return menuItems;
-  } catch (error) {
-    console.error("메뉴 항목 파싱 중 오류 발생:", error);
-    return [];
-  }
-}
-
 function isValidMenuItem(name) {
   return name !== "" && !name.includes("비활성화된");
 }
@@ -39,7 +11,11 @@ function getActiveApp() {
     const activeAppScript = `
       tell application "System Events"
         set frontApp to first application process whose frontmost is true
-        return name of frontApp
+        if frontApp is not missing value then
+          return name of frontApp
+        else
+          return ""
+        end if
       end tell`;
 
     exec(
@@ -71,7 +47,7 @@ function getMacMenuBarInfo(activeApp) {
 
     const appleScript = `
 tell application "System Events"
-    tell process "Figma"
+    tell process "${activeApp}"
         set menuItems to {}
         try
             set menuBarItems to menu bar items of menu bar 1
@@ -166,9 +142,37 @@ end tell
   });
 }
 
+function parseMenuItems(stdout) {
+  try {
+    const items = stdout.trim().split(",");
+    const menuItems = [];
+
+    for (let i = 0; i < items.length; i += 2) {
+      if (items[i] && items[i + 1]) {
+        const name = items[i].trim();
+        const shortcut = items[i + 1].trim();
+
+        if (
+          name.startsWith("name:") &&
+          isValidMenuItem(name.replace(/^name:/, "").trim())
+        ) {
+          menuItems.push({
+            name: name.replace(/^name:/, "").trim(),
+            shortcut: shortcut.replace(/^shortcut:/, "").trim() || "없음", // 기본값 설정
+          });
+        }
+      }
+    }
+    return menuItems;
+  } catch (error) {
+    console.error("메뉴 항목 파싱 중 오류 발생:", error);
+    return [];
+  }
+}
 function setupIpcHandlers() {
-  ipcMain.handle("get-menu-info", async (_, activeApp) => {
+  ipcMain.handle("get-menu-info", async () => {
     try {
+      const activeApp = await getActiveApp();
       if (!activeApp) {
         throw new Error("활성 앱 이름이 제공되지 않았습니다.");
       }
@@ -192,7 +196,6 @@ function setupIpcHandlers() {
     }
   });
 }
-
 function setupKeyboardListeners() {
   globalShortcut.register("Tab", async () => {
     try {
@@ -201,12 +204,14 @@ function setupKeyboardListeners() {
         console.error("활성화된 앱을 찾을 수 없습니다.");
         return;
       }
-      await getMacMenuBarInfo(activeApp);
+      const menuItems = await getMacMenuBarInfo(activeApp);
+      console.log("메뉴 항목:", menuItems);
     } catch (error) {
       console.error("Tab 키 입력 중 오류 발생:", error);
     }
   });
 }
+
 function slideInWindow(mainWindow) {
   let x = -800;
   const targetX = 0;

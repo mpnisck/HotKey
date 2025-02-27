@@ -1,26 +1,5 @@
-import { useState, useEffect } from "react";
-
-const KeyboardIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="25"
-    height="25"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#FE8E00"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="mr-2 text-[#FE8E00]"
-  >
-    <rect x="2" y="4" width="20" height="16" rx="1" ry="1" />
-    <line x1="6" y1="8" x2="6.01" y2="8" />
-    <line x1="10" y1="8" x2="10.01" y2="8" />
-    <line x1="14" y1="8" x2="14.01" y2="8" />
-    <line x1="18" y1="8" x2="18.01" y2="8" />
-    <line x1="8" y1="12" x2="16" y2="12" />
-  </svg>
-);
+import { useEffect } from "react";
+import useHotkeyStore from "../../../main/store";
 
 const macBookProKeyboardLayout = [
   [
@@ -47,19 +26,33 @@ const macBookProKeyboardLayout = [
 ];
 
 function Hotkey() {
-  const [menuData, setMenuData] = useState({});
-  const [activeApp, setActiveApp] = useState("아직 활성화된 앱이 없습니다.");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCommandPressed, setIsCommandPressed] = useState(false);
-  const [isOptionPressed, setIsOptionPressed] = useState(false);
-  const [isControlPressed, setIsControlPressed] = useState(false);
-  const [isShiftPressed, setIsShiftPressed] = useState(false);
-  const [isBackspacePressed, setIsBackspacePressed] = useState(false);
-  const [isFnPressed, setIsFnPressed] = useState(false);
-  const [isKeyActive, setIsKeyActive] = useState(false);
-  const [pressedKeys, setPressedKeys] = useState(new Set());
-  const [keyboardKeys, setKeyboardKeys] = useState(new Set());
+  const {
+    menuData,
+    activeApp,
+    error,
+    isLoading,
+    isCommandPressed,
+    isOptionPressed,
+    isControlPressed,
+    isShiftPressed,
+    isFnPressed,
+    isKeyActive,
+    keyboardKeys,
+    setMenuData,
+    setActiveApp,
+    setError,
+    setIsLoading,
+    addPressedKey,
+    removePressedKey,
+    addKeyboardKey,
+    removeKeyboardKey,
+    setIsCommandPressed,
+    setIsOptionPressed,
+    setIsControlPressed,
+    setIsShiftPressed,
+    setIsFnPressed,
+    setIsKeyActive,
+  } = useHotkeyStore();
 
   const fetchActiveApp = async () => {
     try {
@@ -134,10 +127,11 @@ function Hotkey() {
 
   const handleKeyDown = (event) => {
     const key = event.key.toUpperCase();
+
     event.preventDefault();
 
-    setPressedKeys((prev) => new Set(prev).add(event.key.toLowerCase()));
-    setKeyboardKeys((prev) => new Set(prev).add(key));
+    addPressedKey(event.key);
+    addKeyboardKey(key);
 
     if (event.metaKey) {
       setIsCommandPressed(true);
@@ -147,27 +141,17 @@ function Hotkey() {
       setIsOptionPressed(true);
       setIsKeyActive(true);
     }
-
-    const modifierKeyMap = {
-      Control: () => setIsControlPressed(true),
-      Shift: () => setIsShiftPressed(true),
-      Backspace: () => setIsBackspacePressed(true),
-    };
-
-    if (modifierKeyMap[event.key]) {
-      modifierKeyMap[event.key]();
+    if (event.ctrlKey) {
+      setIsControlPressed(true);
+      setIsKeyActive(true);
     }
-
-    if (event.key.toLowerCase() === "fn" || pressedKeys.has("fn")) {
-      setIsFnPressed(true);
+    if (event.shiftKey) {
+      setIsShiftPressed(true);
       setIsKeyActive(true);
     }
 
-    if (
-      ["한", "A", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(
-        event.key
-      )
-    ) {
+    if (event.key.toLowerCase() === "Fn") {
+      setIsFnPressed(true);
       setIsKeyActive(true);
     }
   };
@@ -175,41 +159,18 @@ function Hotkey() {
   const handleKeyUp = (event) => {
     const key = event.key.toUpperCase();
 
-    setPressedKeys((prev) => {
-      const newKeys = new Set(prev);
-      newKeys.delete(event.key.toLowerCase());
-      return newKeys;
-    });
+    removePressedKey(event.key);
+    removeKeyboardKey(key);
 
-    setKeyboardKeys((prev) => {
-      const updated = new Set(prev);
-      updated.delete(key);
-      return updated;
-    });
+    if (!event.metaKey) setIsCommandPressed(false);
+    if (!event.altKey) setIsOptionPressed(false);
+    if (!event.ctrlKey) setIsControlPressed(false);
+    if (!event.shiftKey) setIsShiftPressed(false);
 
-    const modifierKeyMap = {
-      Control: () => setIsControlPressed(false),
-      Shift: () => setIsShiftPressed(false),
-      Backspace: () => setIsBackspacePressed(false),
-      fn: () => setIsFnPressed(false),
-    };
-
-    if (modifierKeyMap[event.key]) {
-      modifierKeyMap[event.key]();
-    }
-
-    if (
-      !isCommandPressed &&
-      !isOptionPressed &&
-      !isControlPressed &&
-      !isShiftPressed &&
-      !isBackspacePressed &&
-      !isFnPressed
-    ) {
+    if (!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey) {
       setIsKeyActive(false);
     }
   };
-
   const getKeyStyle = (key) => {
     const isPressed = keyboardKeys.has(key.toUpperCase());
     const specialKeys = [
@@ -270,23 +231,52 @@ function Hotkey() {
 
   const filteredMenuData = isKeyActive
     ? Object.entries(menuData).reduce((acc, [category, items]) => {
-        const filteredItems = items.filter(
-          (item) =>
-            (isCommandPressed && item.shortcut.includes("⌘")) ||
-            (isOptionPressed && item.shortcut.includes("⌥")) ||
-            (isControlPressed && item.shortcut.includes("⌃")) ||
-            (isShiftPressed && item.shortcut.includes("⇧")) ||
-            (isBackspacePressed && item.shortcut.includes("⌫")) ||
-            (isFnPressed && item.shortcut.includes("Fn")) ||
-            (pressedKeys.has("enter") && item.shortcut.includes("⏎"))
-        );
+        const filteredItems = items.filter((item) => {
+          const shortcut = item.shortcut || "";
+
+          const matchConditions = [
+            {
+              symbol: "⌘",
+              pressed: isCommandPressed,
+              condition: shortcut.includes("⌘"),
+            },
+            {
+              symbol: "⌥",
+              pressed: isOptionPressed,
+              condition: shortcut.includes("⌥"),
+            },
+            {
+              symbol: "⌃",
+              pressed: isControlPressed,
+              condition: shortcut.includes("⌃"),
+            },
+            {
+              symbol: "⇧",
+              pressed: isShiftPressed,
+              condition: shortcut.includes("⇧"),
+            },
+            {
+              symbol: "Fn",
+              pressed: isFnPressed,
+              condition: shortcut.includes("Fn"),
+            },
+          ];
+
+          const activeModifiers = matchConditions.filter((mod) => mod.pressed);
+
+          if (activeModifiers.length === 0) return false;
+
+          return activeModifiers.every(
+            (mod) => mod.condition && (mod.pressed || !mod.condition)
+          );
+        });
+
         if (filteredItems.length > 0) {
           acc[category] = filteredItems;
         }
         return acc;
       }, {})
     : menuData;
-
   return (
     <div className="w-[95%] h-[800px] m-auto flex flex-col">
       <div className="flex justify-between items-center p-7 bg-[#333] text-[#fff] rounded">
@@ -300,7 +290,6 @@ function Hotkey() {
 
       <div className="bg-[#fff] shadow-md rounded-lg p-4 mt-4">
         <div className="flex items-center mb-4">
-          <KeyboardIcon />
           <h2 className="text-xl font-semibold">키보드 뷰어</h2>
         </div>
 
