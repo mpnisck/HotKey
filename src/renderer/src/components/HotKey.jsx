@@ -196,8 +196,8 @@ function Hotkey() {
     return isPressed
       ? "bg-[#FE8E00] text-[#fff] shadow-lg scale-105"
       : specialKeys.includes(key.toUpperCase())
-        ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
-        : "bg-[#fff] text-gray-800 border border-gray-300 hover:bg-gray-100";
+        ? "bg-gray-200 text-gray-800 shadow-sm hover:bg-gray-300"
+        : "bg-[#fff] text-gray-800 shadow-sm hover:bg-gray-100";
   };
 
   useEffect(() => {
@@ -337,7 +337,7 @@ function Hotkey() {
                 return (
                   <div
                     key={`key-${key}-${rowIndex}-${keyIndex}`}
-                    className={`${specialKeyWidths[key] || "w-12"} h-10 rounded-md text-center flex items-center justify-center font-medium cursor-default transition-all ease-in-out ${getKeyStyle(key)} ${isSpecialKey ? "text-xs" : "text-sm"}`}
+                    className={`${specialKeyWidths[key] || "w-12"} h-8 rounded-md text-center flex items-center justify-center font-medium cursor-default transition-all ease-in-out ${getKeyStyle(key)} ${isSpecialKey ? "text-xs" : "text-sm"}`}
                   >
                     {key === "Meta"
                       ? "⌘"
