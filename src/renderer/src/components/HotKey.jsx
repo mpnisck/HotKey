@@ -54,6 +54,35 @@ function Hotkey() {
     setIsKeyActive,
   } = useHotkeyStore();
 
+  const getKeyStyle = (key) => {
+    const isPressed = keyboardKeys.has(key.toUpperCase());
+    const specialKeys = [
+      "ESC",
+      "TAB",
+      "CAPS LOCK",
+      "SHIFT",
+      "FN",
+      "CONTROL",
+      "ALT",
+      "META",
+      "ENTER",
+      "DELETE",
+      "SPACES",
+      "⏻",
+      "←",
+      "↑",
+      "↓",
+      "→",
+      "한/A",
+    ];
+
+    return isPressed
+      ? "bg-[#FE8E00] text-[#fff] shadow-lg scale-105"
+      : specialKeys.includes(key.toUpperCase())
+        ? "bg-gray-200 text-gray-800 shadow-sm hover:bg-gray-300"
+        : "bg-[#fff] text-gray-800 shadow-sm hover:bg-gray-100";
+  };
+
   const fetchActiveApp = async () => {
     try {
       setIsLoading(true);
@@ -171,34 +200,6 @@ function Hotkey() {
       setIsKeyActive(false);
     }
   };
-  const getKeyStyle = (key) => {
-    const isPressed = keyboardKeys.has(key.toUpperCase());
-    const specialKeys = [
-      "ESC",
-      "TAB",
-      "CAPS LOCK",
-      "SHIFT",
-      "FN",
-      "CONTROL",
-      "ALT",
-      "META",
-      "ENTER",
-      "DELETE",
-      "SPACES",
-      "⏻",
-      "←",
-      "↑",
-      "↓",
-      "→",
-      "한/A",
-    ];
-
-    return isPressed
-      ? "bg-[#FE8E00] text-[#fff] shadow-lg scale-105"
-      : specialKeys.includes(key.toUpperCase())
-        ? "bg-gray-200 text-gray-800 shadow-sm hover:bg-gray-300"
-        : "bg-[#fff] text-gray-800 shadow-sm hover:bg-gray-100";
-  };
 
   useEffect(() => {
     window.addEventListener("keydown", handleTabKey);
@@ -277,6 +278,7 @@ function Hotkey() {
         return acc;
       }, {})
     : menuData;
+
   return (
     <div className="w-[95%] h-[800px] m-auto flex flex-col">
       <div className="flex justify-between items-center p-7 bg-[#333] text-[#fff] rounded">
