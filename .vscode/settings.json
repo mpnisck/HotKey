@@ -1,7 +1,7 @@
 {
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
+    "source.fixAll.eslint": true
   },
   "prettier.requireConfig": true,
   "editor.quickSuggestions": {
@@ -9,7 +9,7 @@
   },
   "css.validate": false,
   "editor.inlineSuggest.enabled": true,
-  "window.zoomLevel": -1,
+  "window.zoomLevel": 0,
   "editor.mouseWheelZoom": false,
   "editor.minimap.sectionHeaderFontSize": 9,
   "screencastMode.fontSize": 56
