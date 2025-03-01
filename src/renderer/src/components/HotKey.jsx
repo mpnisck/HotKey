@@ -31,7 +31,6 @@ function Hotkey() {
     error,
     isLoading,
     isKeyActive,
-    keyboardKeys,
     showMenuData,
     setMenuData,
     setActiveApp,
@@ -53,33 +52,39 @@ function Hotkey() {
     isFnPressed,
   } = useHotkeyStore();
 
-  const getKeyStyle = (key) => {
-    const isPressed = keyboardKeys.has(key.toUpperCase());
-    const specialKeys = [
-      "ESC",
-      "TAB",
-      "CAPS LOCK",
-      "SHIFT",
-      "FN",
-      "CONTROL",
-      "ALT",
-      "META",
-      "ENTER",
-      "DELETE",
-      "SPACES",
-      "⏻",
-      "←",
-      "↑",
-      "↓",
-      "→",
-      "한/A",
-    ];
+  const specialKeyMap = {
+    Cmd: "⌘",
+    Option: "⌥",
+    Shift: "⇧",
+    Control: "⌃",
+    Esc: "⎋",
+    Return: "⏎",
+    Delete: "⌫",
+    Space: "␣",
+  };
 
-    return isPressed
-      ? "bg-[#FE8E00] text-[#fff] shadow-lg scale-105"
-      : specialKeys.includes(key.toUpperCase())
-        ? "bg-gray-200 text-gray-800 shadow-sm hover:bg-gray-300"
-        : "bg-[#fff] text-gray-800 shadow-sm hover:bg-gray-100";
+  function mapSpecialKeys(shortcut) {
+    for (let key in specialKeyMap) {
+      shortcut = shortcut.replace(new RegExp(key, "g"), specialKeyMap[key]);
+    }
+    return shortcut;
+  }
+
+  const processMenuItems = (items) => {
+    return items.reduce((accumulator, item) => {
+      const [category] = item.name.split(" > ");
+      if (!accumulator[category]) {
+        accumulator[category] = [];
+      }
+      const menuName = item.name.split(" > ")[1];
+      if (menuName) {
+        accumulator[category].push({
+          name: menuName,
+          shortcut: mapSpecialKeys(item.shortcut),
+        });
+      }
+      return accumulator;
+    }, {});
   };
 
   const fetchMenuItems = async (currentApp) => {
@@ -126,48 +131,6 @@ function Hotkey() {
     }
   };
 
-  const fetchActiveApp = async () => {
-    const storedActiveApp = localStorage.getItem("activeApp");
-
-    if (storedActiveApp) {
-      setActiveApp(storedActiveApp);
-      return storedActiveApp;
-    }
-
-    try {
-      const activeApp = await window.api.invoke("get-active-app");
-
-      if (activeApp) {
-        setActiveApp(activeApp);
-        localStorage.setItem("activeApp", activeApp);
-        return activeApp;
-      } else {
-        setActiveApp("활성화된 앱 정보를 찾을 수 없습니다.");
-        return null;
-      }
-    } catch (error) {
-      setError("활성화된 앱을 가져오는 중에 오류가 발생했습니다.");
-      return null;
-    }
-  };
-
-  const processMenuItems = (items) => {
-    return items.reduce((accumulator, item) => {
-      const [category] = item.name.split(" > ");
-      if (!accumulator[category]) {
-        accumulator[category] = [];
-      }
-      const menuName = item.name.split(" > ")[1];
-      if (menuName) {
-        accumulator[category].push({
-          name: menuName,
-          shortcut: item.shortcut,
-        });
-      }
-      return accumulator;
-    }, {});
-  };
-
   useEffect(() => {
     const loadInitialData = async () => {
       const storedActiveApp = localStorage.getItem("activeApp");
@@ -187,65 +150,12 @@ function Hotkey() {
           await fetchMenuItems(storedActiveApp);
         }
       } else {
-        await fetchActiveApp();
+        await fetchMenuItems(await window.api.invoke("get-active-app"));
       }
     };
 
     loadInitialData();
   }, []);
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
-  const handleKeyDown = (event) => {
-    const key = event.key.toUpperCase();
-    event.preventDefault();
-
-    addKeyboardKey(key);
-
-    if (event.metaKey) {
-      setIsCommandPressed(true);
-      setIsKeyActive(true);
-    }
-    if (event.altKey) {
-      setIsOptionPressed(true);
-      setIsKeyActive(true);
-    }
-    if (event.ctrlKey) {
-      setIsControlPressed(true);
-      setIsKeyActive(true);
-    }
-    if (event.shiftKey) {
-      setIsShiftPressed(true);
-      setIsKeyActive(true);
-    }
-
-    if (event.key.toLowerCase() === "fn") {
-      setIsFnPressed(true);
-      setIsKeyActive(true);
-    }
-  };
-
-  const handleKeyUp = (event) => {
-    const key = event.key.toUpperCase();
-    removeKeyboardKey(key);
-
-    if (!event.metaKey) setIsCommandPressed(false);
-    if (!event.altKey) setIsOptionPressed(false);
-    if (!event.ctrlKey) setIsControlPressed(false);
-    if (!event.shiftKey) setIsShiftPressed(false);
-
-    if (!event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey) {
-      setIsKeyActive(false);
-    }
-  };
 
   const filteredMenuData = isKeyActive
     ? Object.entries(menuData).reduce((acc, [category, items]) => {
@@ -293,6 +203,63 @@ function Hotkey() {
         return acc;
       }, {})
     : menuData;
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const key = event.key.toUpperCase();
+      event.preventDefault();
+      addKeyboardKey(key);
+
+      if (event.metaKey) {
+        setIsCommandPressed(true);
+        setIsKeyActive(true);
+      }
+      if (event.altKey) {
+        setIsOptionPressed(true);
+        setIsKeyActive(true);
+      }
+      if (event.ctrlKey) {
+        setIsControlPressed(true);
+        setIsKeyActive(true);
+      }
+      if (event.shiftKey) {
+        setIsShiftPressed(true);
+        setIsKeyActive(true);
+      }
+
+      if (event.key.toLowerCase() === "fn") {
+        setIsFnPressed(true);
+        setIsKeyActive(true);
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      const key = event.key.toUpperCase();
+      removeKeyboardKey(key);
+
+      if (!event.metaKey) setIsCommandPressed(false);
+      if (!event.altKey) setIsOptionPressed(false);
+      if (!event.ctrlKey) setIsControlPressed(false);
+      if (!event.shiftKey) setIsShiftPressed(false);
+
+      if (
+        !event.metaKey &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.shiftKey
+      ) {
+        setIsKeyActive(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   return (
     <div className="w-[95%] h-[800px] m-auto flex flex-col">
@@ -354,7 +321,7 @@ function Hotkey() {
                 return (
                   <div
                     key={`key-${key}-${rowIndex}-${keyIndex}`}
-                    className={`${specialKeyWidths[key] || "w-12"} h-8 rounded-md text-center flex items-center justify-center font-medium cursor-default transition-all ease-in-out ${getKeyStyle(key)} ${isSpecialKey ? "text-xs" : "text-sm"}`}
+                    className={`${specialKeyWidths[key] || "w-12"} h-8 rounded-md text-center flex items-center justify-center font-medium cursor-default transition-all ease-in-out ${isSpecialKey ? "bg-gray-300" : "bg-white"} ${isSpecialKey ? "text-xs" : "text-sm"}`}
                   >
                     {key === "Meta"
                       ? "⌘"
