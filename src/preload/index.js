@@ -1,12 +1,9 @@
-import { contextBridge, ipcRenderer } from "electron";
+const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("api", {
-  invoke: (channel, data) => ipcRenderer.invoke(channel, data),
+  invoke: (channel, ...args) => ipcRenderer.invoke(channel, ...args),
+  on: (channel, func) => {
+    ipcRenderer.on(channel, func);
+    return () => ipcRenderer.removeListener(channel, func);
+  },
 });
-
-ipcRenderer
-  .invoke("get-menu-info")
-  .then(() => {})
-  .catch((error) => {
-    console.error("데이터 invoke 실패", error);
-  });

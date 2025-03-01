@@ -31,19 +31,12 @@ function Hotkey() {
     activeApp,
     error,
     isLoading,
-    isCommandPressed,
-    isOptionPressed,
-    isControlPressed,
-    isShiftPressed,
-    isFnPressed,
     isKeyActive,
     keyboardKeys,
     setMenuData,
     setActiveApp,
     setError,
     setIsLoading,
-    addPressedKey,
-    removePressedKey,
     addKeyboardKey,
     removeKeyboardKey,
     setIsCommandPressed,
@@ -52,6 +45,11 @@ function Hotkey() {
     setIsShiftPressed,
     setIsFnPressed,
     setIsKeyActive,
+    isCommandPressed,
+    isOptionPressed,
+    isControlPressed,
+    isShiftPressed,
+    isFnPressed,
   } = useHotkeyStore();
 
   const getKeyStyle = (key) => {
@@ -83,19 +81,95 @@ function Hotkey() {
         : "bg-[#fff] text-gray-800 shadow-sm hover:bg-gray-100";
   };
 
-  const fetchActiveApp = async () => {
+  const fetchMenuItems = async (currentApp) => {
+    const storedMenuData = localStorage.getItem("menuData");
+
+    if (storedMenuData) {
+      try {
+        const parsedMenuData = JSON.parse(storedMenuData);
+
+        if (Object.keys(parsedMenuData).length > 0) {
+          setMenuData(parsedMenuData);
+          setError("");
+          return;
+        }
+      } catch (error) {
+        console.error("로컬 스토리지 데이터 파싱 중 오류:", error);
+      }
+    }
+
+    if (!currentApp) {
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const activeApp = await window.api.invoke("get-active-app");
-      setActiveApp(activeApp || "활성화된 앱 정보를 찾을 수 없습니다.");
-      return activeApp;
+      const menuItems = await window.api.invoke("get-menu-info", currentApp);
+
+      if (Array.isArray(menuItems) && menuItems.length > 0) {
+        const groupedItems = processMenuItems(menuItems);
+        setMenuData(groupedItems);
+        localStorage.setItem("menuData", JSON.stringify(groupedItems));
+        setError("");
+      } else {
+        setError("메뉴 항목이 없습니다.");
+        setMenuData({});
+        localStorage.removeItem("menuData");
+      }
     } catch (error) {
-      setError("활성화된 앱을 가져오는 중에 오류가 발생했습니다.");
-      return null;
+      setError("메뉴 항목을 가져오는 중에 오류가 발생했습니다.");
+      setMenuData({});
+      localStorage.removeItem("menuData");
     } finally {
       setIsLoading(false);
     }
   };
+
+  const fetchActiveApp = async () => {
+    const storedActiveApp = localStorage.getItem("activeApp");
+
+    if (storedActiveApp) {
+      setActiveApp(storedActiveApp);
+      return storedActiveApp;
+    }
+
+    try {
+      const activeApp = await window.api.invoke("get-active-app");
+
+      if (activeApp) {
+        setActiveApp(activeApp);
+        localStorage.setItem("activeApp", activeApp);
+        return activeApp;
+      } else {
+        setActiveApp("활성화된 앱 정보를 찾을 수 없습니다.");
+        return null;
+      }
+    } catch (error) {
+      setError("활성화된 앱을 가져오는 중에 오류가 발생했습니다.");
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const handleTabKey = async (event) => {
+      if (event.key === "Tab") {
+        const app = await fetchActiveApp();
+        if (app) {
+          await fetchMenuItems(app);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleTabKey);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleTabKey);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   const processMenuItems = (items) => {
     return items.reduce((accumulator, item) => {
@@ -114,52 +188,36 @@ function Hotkey() {
     }, {});
   };
 
-  const fetchMenuItems = async (currentApp) => {
-    if (!currentApp) return;
-    try {
-      setIsLoading(true);
-      const menuItems = await window.api.invoke("get-menu-info", currentApp);
-      if (Array.isArray(menuItems) && menuItems.length > 0) {
-        const groupedItems = processMenuItems(menuItems);
-        setMenuData(groupedItems);
-        setError("");
-      } else {
-        setError("메뉴 항목이 없습니다.");
-        setMenuData({});
-      }
-    } catch (error) {
-      setError("메뉴 항목을 가져오는 중에 오류가 발생했습니다.");
-      setMenuData({});
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    const loadInitialData = async () => {
+      const storedActiveApp = localStorage.getItem("activeApp");
+      const storedMenuData = localStorage.getItem("menuData");
 
-  const handleTabKey = async (event) => {
-    if (event.key === "Tab") {
-      event.preventDefault();
-      setIsLoading(true);
-      try {
-        const currentApp = await fetchActiveApp();
-        if (currentApp) {
-          await fetchMenuItems(currentApp);
+      if (storedActiveApp) {
+        setActiveApp(storedActiveApp);
+
+        if (storedMenuData) {
+          try {
+            const parsedMenuData = JSON.parse(storedMenuData);
+            setMenuData(parsedMenuData);
+          } catch (error) {
+            console.error("초기 메뉴 데이터 파싱 오류:", error);
+          }
         } else {
-          setError("활성화된 앱이 없습니다.");
+          await fetchMenuItems(storedActiveApp);
         }
-      } catch (error) {
-        setError("데이터를 가져오는 중에 오류가 발생했습니다.");
-      } finally {
-        setIsLoading(false);
+      } else {
+        await fetchActiveApp();
       }
-    }
-  };
+    };
+
+    loadInitialData();
+  }, []);
 
   const handleKeyDown = (event) => {
     const key = event.key.toUpperCase();
-
     event.preventDefault();
 
-    addPressedKey(event.key);
     addKeyboardKey(key);
 
     if (event.metaKey) {
@@ -187,8 +245,6 @@ function Hotkey() {
 
   const handleKeyUp = (event) => {
     const key = event.key.toUpperCase();
-
-    removePressedKey(event.key);
     removeKeyboardKey(key);
 
     if (!event.metaKey) setIsCommandPressed(false);
@@ -200,35 +256,6 @@ function Hotkey() {
       setIsKeyActive(false);
     }
   };
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleTabKey);
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    return () => {
-      window.removeEventListener("keydown", handleTabKey);
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
-  useEffect(() => {
-    const initData = async () => {
-      setIsLoading(true);
-      try {
-        const currentApp = await fetchActiveApp();
-        if (currentApp) {
-          await fetchMenuItems(currentApp);
-        }
-      } catch (error) {
-        setError("초기 데이터를 불러오는 중에 오류 발생");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initData();
-  }, []);
 
   const filteredMenuData = isKeyActive
     ? Object.entries(menuData).reduce((acc, [category, items]) => {
@@ -264,11 +291,9 @@ function Hotkey() {
           ];
 
           const activeModifiers = matchConditions.filter((mod) => mod.pressed);
-
-          if (activeModifiers.length === 0) return false;
-
-          return activeModifiers.every(
-            (mod) => mod.condition && (mod.pressed || !mod.condition)
+          return (
+            activeModifiers.length > 0 &&
+            activeModifiers.every((mod) => mod.condition)
           );
         });
 

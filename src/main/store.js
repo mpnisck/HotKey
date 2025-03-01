@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 const useHotkeyStore = create((set) => ({
   menuData: {},
-  activeApp: "아직 활성화된 앱이 없습니다.",
+  activeApp: "Figma",
   error: "",
   isLoading: false,
   isCommandPressed: false,

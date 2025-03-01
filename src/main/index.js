@@ -38,16 +38,11 @@ function getActiveApp() {
   });
 }
 
-function getMacMenuBarInfo(activeApp) {
+function getMacMenuBarInfo() {
   return new Promise((resolve, reject) => {
-    if (!activeApp || typeof activeApp !== "string") {
-      reject(new Error("활성 앱 이름이 유효하지 않습니다."));
-      return;
-    }
-
     const appleScript = `
 tell application "System Events"
-    tell process "${activeApp}"
+    tell process "Figma"
         set menuItems to {}
         try
             set menuBarItems to menu bar items of menu bar 1
@@ -158,7 +153,7 @@ function parseMenuItems(stdout) {
         ) {
           menuItems.push({
             name: name.replace(/^name:/, "").trim(),
-            shortcut: shortcut.replace(/^shortcut:/, "").trim() || "없음", // 기본값 설정
+            shortcut: shortcut.replace(/^shortcut:/, "").trim() || "없음",
           });
         }
       }
@@ -169,6 +164,7 @@ function parseMenuItems(stdout) {
     return [];
   }
 }
+
 function setupIpcHandlers() {
   ipcMain.handle("get-menu-info", async () => {
     try {
@@ -196,16 +192,22 @@ function setupIpcHandlers() {
     }
   });
 }
+
 function setupKeyboardListeners() {
   globalShortcut.register("Tab", async () => {
     try {
       const activeApp = await getActiveApp();
+      console.log("이것은 메인의 활성화된 앱: ", activeApp);
+
       if (!activeApp) {
         console.error("활성화된 앱을 찾을 수 없습니다.");
         return;
       }
       const menuItems = await getMacMenuBarInfo(activeApp);
-      console.log("메뉴 항목:", menuItems);
+
+      if (menuItems) {
+        return menuItems;
+      }
     } catch (error) {
       console.error("Tab 키 입력 중 오류 발생:", error);
     }
@@ -224,13 +226,14 @@ function slideInWindow(mainWindow) {
     }
   }, 6);
 }
+
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 610,
     height: 940,
     x: 0,
     y: 0,
-    frame: false,
+    frame: true,
     show: false,
     webPreferences: {
       nodeIntegration: true,

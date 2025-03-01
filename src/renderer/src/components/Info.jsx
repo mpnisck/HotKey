@@ -1,16 +1,49 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import textImgUrl from "../assets/HotKey.png";
 import logoImgUrl from "../assets/hotkey_icon.png";
 
 function Info() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeApp, setActiveApp] = useState("");
 
-  const handleStart = () => {
-    navigate("/hotkey", {
-      state: {
-        initialMessage: "Tab 키를 눌러 현재 활성화된 앱의 단축키를 확인하세요.",
-      },
-    });
+  useEffect(() => {
+    const storedActiveApp = localStorage.getItem("activeApp");
+    if (storedActiveApp) {
+      setActiveApp(storedActiveApp);
+    }
+  }, []);
+
+  const fetchActiveApp = async () => {
+    try {
+      const activeApp = await window.api.invoke("get-active-app");
+      return activeApp || "활성화된 앱 정보를 찾을 수 없습니다.";
+    } catch (error) {
+      console.error("활성화된 앱을 가져오는 중 오류가 발생했습니다.", error);
+      return null;
+    }
+  };
+
+  const handleStart = async () => {
+    setIsLoading(true);
+    try {
+      const currentApp = await fetchActiveApp();
+      if (currentApp) {
+        setActiveApp(currentApp);
+        localStorage.setItem("activeApp", currentApp);
+      }
+      navigate("/hotkey", {
+        state: {
+          initialMessage:
+            "Tab 키를 눌러 현재 활성화된 앱의 단축키를 확인하세요.",
+        },
+      });
+    } catch (error) {
+      console.error("앱을 실행하는 중 오류가 발생했습니다.", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -110,11 +143,20 @@ function Info() {
         </div>
 
         <button
-          className="w-[95%] h-[50px] rounded-full mx-auto my-[10px] text-2xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00]"
+          className={`w-[95%] h-[50px] rounded-full mx-auto my-[10px] text-2xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00] ${
+            isLoading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
           onClick={handleStart}
+          disabled={isLoading}
         >
-          사용 시작
+          {isLoading ? "로딩 중..." : "사용 시작"}
         </button>
+
+        {activeApp && (
+          <div className="mt-4 text-center text-lg text-[#333]">
+            현재 활성화된 앱: {activeApp}
+          </div>
+        )}
       </div>
     </div>
   );
