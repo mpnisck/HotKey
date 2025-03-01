@@ -54,12 +54,10 @@ tell application "System Events"
                     set subItemShortcut to ""
 
                     try
-                        -- AXMenuItemCmdKey 속성을 사용하여 단축키 가져오기
                         if exists (attribute "AXMenuItemCmdKey" of subItem) then
                             set subItemShortcut to value of attribute "AXMenuItemCmdKey" of subItem
                         end if
 
-                        -- 단축키가 없을 경우, 기존 방식으로 시도
                         if subItemShortcut is "" then
                             set shortcutModifiers to ""
 

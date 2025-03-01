@@ -28,11 +28,11 @@ const macBookProKeyboardLayout = [
 function Hotkey() {
   const {
     menuData,
-    activeApp,
     error,
     isLoading,
     isKeyActive,
     keyboardKeys,
+    showMenuData,
     setMenuData,
     setActiveApp,
     setError,
@@ -45,6 +45,7 @@ function Hotkey() {
     setIsShiftPressed,
     setIsFnPressed,
     setIsKeyActive,
+    setShowMenuData,
     isCommandPressed,
     isOptionPressed,
     isControlPressed,
@@ -150,27 +151,6 @@ function Hotkey() {
     }
   };
 
-  useEffect(() => {
-    const handleTabKey = async (event) => {
-      if (event.key === "Tab") {
-        const app = await fetchActiveApp();
-        if (app) {
-          await fetchMenuItems(app);
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleTabKey);
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleTabKey);
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
   const processMenuItems = (items) => {
     return items.reduce((accumulator, item) => {
       const [category] = item.name.split(" > ");
@@ -214,6 +194,16 @@ function Hotkey() {
     loadInitialData();
   }, []);
 
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
   const handleKeyDown = (event) => {
     const key = event.key.toUpperCase();
     event.preventDefault();
@@ -237,7 +227,7 @@ function Hotkey() {
       setIsKeyActive(true);
     }
 
-    if (event.key.toLowerCase() === "Fn") {
+    if (event.key.toLowerCase() === "fn") {
       setIsFnPressed(true);
       setIsKeyActive(true);
     }
@@ -310,7 +300,7 @@ function Hotkey() {
         <h1 className="text-2xl font-semibold">단축키 정보</h1>
         <p className="text-[#666]">
           <span className="text-xl font-semibold bg-[#FE8E00] text-[#fff] py-2 px-5 rounded-full">
-            {activeApp}
+            Figma
           </span>
         </p>
       </div>
@@ -385,6 +375,13 @@ function Hotkey() {
         </div>
       </div>
 
+      <button
+        className="p-3 bg-[#FE8E00] text-[#fff] rounded mb-4 cursor-pointer"
+        onClick={() => setShowMenuData((prev) => !prev)}
+      >
+        {showMenuData ? "정보 숨기기" : "정보 보기"}
+      </button>
+
       {isLoading && (
         <div className="flex items-center justify-center py-8">
           <div className="flex flex-col items-center gap-3">
@@ -398,37 +395,40 @@ function Hotkey() {
 
       {error && <div className="text-center text-[#f00] p-4">{error}</div>}
 
-      {!isLoading && !error && Object.keys(filteredMenuData).length > 0 && (
-        <div className="flex-1 overflow-y-auto p-4">
-          {Object.entries(filteredMenuData).map(([category, items]) => (
-            <div key={category} className="mb-6">
-              <h2 className="text-lg font-semibold mb-5 bg-gray-100 p-3 rounded">
-                {category}
-              </h2>
-              <div className="grid gap-2">
-                {items.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-3 bg-[#fff] rounded"
-                  >
-                    <span className="text-[#333] text-sm">{item.name}</span>
-                    <code
-                      className={`text-lg tracking-wider block px-4 py-1 rounded-md ${isKeyActive ? "bg-[#FE8E00] text-[#fff]" : "bg-[#333] text-[#fff]"}`}
+      {showMenuData &&
+        !isLoading &&
+        !error &&
+        Object.keys(filteredMenuData).length > 0 && (
+          <div className="flex-1 overflow-y-auto p-4">
+            {Object.entries(filteredMenuData).map(([category, items]) => (
+              <div key={category} className="mb-6">
+                <h2 className="text-lg font-semibold mb-5 bg-gray-100 p-3 rounded">
+                  {category}
+                </h2>
+                <div className="grid gap-2">
+                  {items.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center p-3 bg-[#fff] rounded"
                     >
-                      {item.shortcut || "-"}
-                    </code>
-                  </div>
-                ))}
+                      <span className="text-[#333] text-sm">{item.name}</span>
+                      <code
+                        className={`text-lg tracking-wider block px-4 py-1 rounded-md ${isKeyActive ? "bg-[#FE8E00] text-[#fff]" : "bg-[#333] text-[#fff]"}`}
+                      >
+                        {item.shortcut || "-"}
+                      </code>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
 
       {!isLoading && !error && Object.keys(menuData).length === 0 && (
         <div className="flex items-center justify-center py-6">
           <p className="text-[#999]">
-            단축키 정보가 없습니다. Tab 키를 눌러 정보를 불러오세요.
+            단축키 정보가 없습니다. 버튼을 눌러 정보를 불러오세요.
           </p>
         </div>
       )}
