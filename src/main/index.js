@@ -17,14 +17,9 @@ function mapSpecialKeys(shortcut) {
   for (let key in specialKeyMap) {
     shortcut = shortcut.replace(new RegExp(key, "g"), specialKeyMap[key]);
   }
-
-  shortcut = shortcut.replace(/Cmd\s?\+?\s?/g, "⌘");
-  shortcut = shortcut.replace(/Option\s?\+?\s?/g, "⌥");
-  shortcut = shortcut.replace(/Shift\s?\+?\s?/g, "⇧");
-  shortcut = shortcut.replace(/Control\s?\+?\s?/g, "⌃");
-
   return shortcut;
 }
+
 function isValidMenuItem(name) {
   return name !== "" && !name.includes("비활성화된");
 }
@@ -67,11 +62,9 @@ tell application "System Events"
     tell process "Figma"
         set menuItems to {}
         try
-            -- 피그마의 메뉴바 항목을 가져옴
             set menuBarItems to menu bar items of menu bar 1
             repeat with menuItem in menuBarItems
                 set menuItemName to name of menuItem
-                -- 피그마의 각 메뉴에서 하위 메뉴 항목을 가져옴
                 set subMenuItems to menu items of menu 1 of menuItem
                 repeat with subItem in subMenuItems
                     set subItemName to name of subItem
@@ -83,33 +76,33 @@ tell application "System Events"
                             set subItemShortcut to value of attribute "AXMenuItemCmdKey" of subItem
                         end if
 
-                        -- 단축키가 없다면, 모디파이어 키(⌘, ⇧, ⌥, ⌃)를 이용해 조합
+                        -- 모디파이어 키가 없으면 비트 연산으로 추출
                         if subItemShortcut is "" then
                             set shortcutModifiers to ""
 
-                            -- 모디파이어 키에 대한 값 확인
                             if exists (attribute "AXMenuItemCmdModifiers" of subItem) then
                                 set modValue to value of attribute "AXMenuItemCmdModifiers" of subItem
                                 if modValue is not missing value then
                                     set modNum to modValue as number
+                                    set shortcutModifiers to ""
 
-                                    -- 각 모디파이어 키에 해당하는 특수기호 조합
+                                    -- 비트 연산을 통해 각 모디파이어 키 추출
                                     if (modNum div 1 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "Cmd"
+                                        set shortcutModifiers to shortcutModifiers & "Cmd" -- Cmd
                                     end if
                                     if (modNum div 2 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "Option"
+                                        set shortcutModifiers to shortcutModifiers & "Option" -- Option
                                     end if
                                     if (modNum div 4 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "Shift"
+                                        set shortcutModifiers to shortcutModifiers & "Shift" -- Shift
                                     end if
                                     if (modNum div 8 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "Control"
+                                        set shortcutModifiers to shortcutModifiers & "Control" -- Control
                                     end if
                                 end if
                             end if
 
-                            -- 명령 문자와 모디파이어 키 결합
+                            -- 명령 문자 결합
                             if exists (attribute "AXMenuItemCmdChar" of subItem) then
                                 set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
                                 if commandChar is not missing value then
@@ -117,7 +110,6 @@ tell application "System Events"
                                 end if
                             end if
                         end if
-
                     on error errMsg
                         log "Error retrieving shortcut for " & subItemName & ": " & errMsg
                     end try
@@ -128,7 +120,6 @@ tell application "System Events"
                     end if
                 end repeat
             end repeat
-            -- 피그마 메뉴 항목과 단축키 목록 반환
             return menuItems
         on error errMsg
             return "Error: " & errMsg
@@ -186,6 +177,7 @@ function parseMenuItems(stdout) {
         }
       }
     }
+
     return menuItems;
   } catch (error) {
     console.error("메뉴 항목 파싱 중 오류 발생:", error);
