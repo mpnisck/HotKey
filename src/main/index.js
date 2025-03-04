@@ -44,64 +44,55 @@ function getMacMenuBarInfo() {
 tell application "System Events"
     tell process "Figma"
         set menuItems to {}
-        try
-            set menuBarItems to menu bar items of menu bar 1
-            repeat with menuItem in menuBarItems
-                set menuItemName to name of menuItem
-                set subMenuItems to menu items of menu 1 of menuItem
-                repeat with subItem in subMenuItems
-                    set subItemName to name of subItem
-                    set subItemShortcut to ""
+        set menuBarItems to menu bar items of menu bar 1
+        repeat with menuItem in menuBarItems
+            set menuItemName to name of menuItem
+            set subMenuItems to menu items of menu 1 of menuItem
+            repeat with subItem in subMenuItems
+                set subItemName to name of subItem
+                set subItemShortcut to ""
 
-                    try
-                        if exists (attribute "AXMenuItemCmdKey" of subItem) then
-                            set subItemShortcut to value of attribute "AXMenuItemCmdKey" of subItem
-                        end if
+                if exists (attribute "AXMenuItemCmdKey" of subItem) then
+                    set subItemShortcut to value of attribute "AXMenuItemCmdKey" of subItem
+                end if
 
-                        if subItemShortcut is "" then
-                            set shortcutModifiers to ""
+                if subItemShortcut is "" then
+                    set shortcutModifiers to ""
 
-                            if exists (attribute "AXMenuItemCmdModifiers" of subItem) then
-                                set modValue to value of attribute "AXMenuItemCmdModifiers" of subItem
-                                if modValue is not missing value then
-                                    set modNum to modValue as number
+                    if exists (attribute "AXMenuItemCmdModifiers" of subItem) then
+                        set modValue to value of attribute "AXMenuItemCmdModifiers" of subItem
+                        if modValue is not missing value then
+                            set modNum to modValue as number
 
-                                    if (modNum div 1 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "⌘"
-                                    end if
-                                    if (modNum div 2 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "⌥"
-                                    end if
-                                    if (modNum div 4 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "⇧"
-                                    end if
-                                    if (modNum div 8 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "⌃"
-                                    end if
-                                end if
+                            if (modNum div 1 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⌘"
                             end if
-
-                            if exists (attribute "AXMenuItemCmdChar" of subItem) then
-                                set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
-                                if commandChar is not missing value then
-                                    set subItemShortcut to shortcutModifiers & commandChar
-                                end if
+                            if (modNum div 2 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⌥"
+                            end if
+                            if (modNum div 4 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⇧"
+                            end if
+                            if (modNum div 8 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⌃"
                             end if
                         end if
-
-                    on error errMsg
-                        log "Error retrieving shortcut for " & subItemName & ": " & errMsg
-                    end try
-
-                    if subItemShortcut is not "" then
-                        set end of menuItems to {name:menuItemName & " > " & subItemName, shortcut:subItemShortcut}
                     end if
-                end repeat
+
+                    if exists (attribute "AXMenuItemCmdChar" of subItem) then
+                        set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
+                        if commandChar is not missing value then
+                            set subItemShortcut to shortcutModifiers & commandChar
+                        end if
+                    end if
+                end if
+
+                if subItemShortcut is not "" then
+                    set end of menuItems to {name:menuItemName & " > " & subItemName, shortcut:subItemShortcut}
+                end if
             end repeat
-            return menuItems
-        on error errMsg
-            return "Error: " & errMsg
-        end try
+        end repeat
+        return menuItems
     end tell
 end tell
     `;
@@ -109,15 +100,8 @@ end tell
     exec(
       `osascript -e "${appleScript.replace(/"/g, '\\"')}"`,
       (error, stdout, stderr) => {
-        if (error) {
-          console.error("AppleScript 실행 오류:", error);
-          reject(new Error(`AppleScript 실행 중 오류 발생: ${error.message}`));
-          return;
-        }
-
-        if (stderr) {
-          console.error("AppleScript 오류:", stderr);
-          reject(new Error(stderr));
+        if (error || stderr) {
+          reject(new Error(error || stderr));
           return;
         }
 
@@ -125,7 +109,6 @@ end tell
           const menuItems = parseMenuItems(stdout);
           resolve(menuItems);
         } catch (parseError) {
-          console.error("메뉴 아이템 파싱 오류:", parseError);
           reject(
             new Error(`메뉴 항목 파싱 중 오류 발생: ${parseError.message}`)
           );
