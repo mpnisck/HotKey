@@ -35,8 +35,7 @@ function Info() {
       }
       navigate("/hotkey", {
         state: {
-          initialMessage:
-            "Tab 키를 눌러 현재 활성화된 앱의 단축키를 확인하세요.",
+          initialMessage: "버튼을 눌러 현재 활성화된 앱의 단축키를 확인하세요.",
         },
       });
     } catch (error) {
@@ -47,7 +46,7 @@ function Info() {
   };
 
   return (
-    <div className="w-[95%] h-[900px] m-auto flex flex-col justify-center gap-[1rem]">
+    <div className="w-fit h-[900px] m-auto flex flex-col justify-center gap-[2rem]">
       <div className="flex gap-[10px] items-center">
         <img src={logoImgUrl} alt="HotKey Logo" className="block w-[60px]" />
         <img
@@ -57,8 +56,8 @@ function Info() {
         />
       </div>
       <div className="contentWrap w-fit flex flex-col tracking-tighter">
-        <div className="flex items-center gap-[0.5rem] my-[1rem]">
-          <h1 className="flex justify-center items-center w-[25%] h-[40px] bg-[#ff8c00] text-[#fff] text-lg rounded-full">
+        <div className="flex items-center gap-[0.5rem] mt-[1rem]">
+          <h1 className="flex justify-center items-center w-[25%] h-[40px] bg-[#ff8c00] text-[#fff] text-lg rounded-t-lg">
             사용자 가이드
           </h1>
           <h2 className="font-medium text-[#FF8C00]">
@@ -66,84 +65,57 @@ function Info() {
           </h2>
         </div>
 
-        <div>
-          <ul className="list-disc leading-7 text-[#777] mb-[1.4rem]">
-            <li className="list-none">
-              <h3 className="text-lg text-[#000] font-bold py-[0.5rem]">
-                개인정보 보호 설정 해제
-              </h3>
-            </li>
-            <li className="ml-[1rem]">
-              설정 창을 열고, 개인정보 보호를 클릭해 볼까요?
-            </li>
-            <li className="ml-[1rem]">
-              시작 메뉴 &gt; 설정 &gt; 개인정보 보호로 이동해 주세요.
-            </li>
-            <li className="ml-[1rem]">
-              왼쪽 메뉴에서 일반을 클릭하고, 여러 옵션을 확인해 볼까요?
-            </li>
-            <li className="ml-[1rem]">
-              예를 들어, 앱이 내 정보에 액세스하도록 허용을 끄거나,
-              <br />
-              위치나 음성인식 등을 비활성화할 수 있어요!
-            </li>
-            <li className="ml-[1rem]">
-              진단 및 데이터 항목에서 기본 설정을 선택하거나
-              <br />
-              모든 데이터 공유 설정을 변경도 할 수 있어요!
-            </li>
-          </ul>
-
-          <ul className="list-disc leading-7 text-[#777] mb-[1.4rem]">
-            <li className="list-none">
-              <h3 className="text-lg text-[#000] font-bold py-[0.5rem]">
-                앱 권한 관리
-              </h3>
-            </li>
-            <li className="ml-[1rem]">
-              관리하려면, 개인정보 보호 &gt; 앱 권한에서 각 앱별로 접근할 수
-              있는 권한을 조정할 수 있어요!
-            </li>
-            <li className="ml-[1rem]">
-              카메라, 마이크, 위치, 알림 등 각 항목을 클릭하고 권한도 해제할 수
-              있어요!
-            </li>
-          </ul>
-
-          <ul className="list-disc leading-7 text-[#777] mb-[1.4rem]">
-            <li className="list-none">
-              <h3 className="text-lg text-[#000] font-bold py-[0.5rem]">
-                macOS에서 개인정보 보호 해제
-              </h3>
-            </li>
-            <li className="ml-[1rem]">
-              시스템 환경설정을 열고 보안 및 개인정보 보호로 이동해 볼까요?
-            </li>
-            <li className="ml-[1rem]">
-              상단 탭에서 개인정보 보호를 클릭해 주세요!
-            </li>
-            <li className="ml-[1rem]">
-              여기서 위치 서비스, 마이크, 카메라, 연락처 등 각 항목에 대한 앱의
-              권한을 관리할 수 있어요!
-            </li>
-            <li className="ml-[1rem]">
-              앱 목록에서 권한을 허용하거나 비활성화할 수 있어요!
-            </li>
-            <li className="ml-[1rem]">
-              앱별로 전체 디스크 접근 권한, 하드웨어 리소스 접근 등을 수정할 수
-              있어요!
-            </li>
-            <li className="ml-[1rem]">
-              전체 디스크 접근 권한을 설정하려면, 시스템 환경설정 &gt; 보안 및
-              개인정보 보호 &gt;
-              <br />
-              전체 디스크 접근에서 앱별로 권한을 허용/거부할 수 있어요!
-            </li>
-          </ul>
+        <div className="mb-[2rem] py-[1rem] bg-[#f6f6f6] shadow-sm">
+          <p className="text-[#333] text-lg text-center leading-8">
+            이 앱은 활성화된 메뉴바의 단축키 정보를 가져오고 있어요
+            <br />
+            <span
+              className="inline mr-1.5 px-5 py-1 text-sm
+             text-[#fff] bg-[#000] rounded-full"
+            >
+              사용 시작
+            </span>
+            버튼을 누르고 원하는 앱을 실행해 보세요!
+          </p>
         </div>
 
+        <ul className="list-disc leading-7 text-[#777] mb-[4rem]">
+          <li className="list-none">
+            <h3 className="text-lg text-[#000] font-bold py-[0.5rem]">
+              macOS에서 개인정보 보호 해제
+            </h3>
+          </li>
+          <li className="ml-[1rem]">
+            <span className="inline-block align-middle">
+              <svg
+                role="img"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-[17px] h-[17px] mr-1"
+              >
+                <title>Apple</title>
+                <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+              </svg>
+            </span>
+            Apple 메뉴 &gt; 시스템 설정 &gt; 개인정보 보호 및 보안
+          </li>
+          <li className="ml-[1rem]">
+            사이드바에서
+            <span className="text-[#FF8C00]"> 개인정보 보호 및 보안</span> 을
+            클릭 (아래로 스크롤해야 할 수 있어요.)
+          </li>
+          <li className="ml-[1rem]">
+            위치, 카메라, 마이크 등의 권한을 관리하세요.
+          </li>
+          <li className="ml-[1rem]">
+            전체 디스크 접근 권한을 설정하려면{" "}
+            <span className="text-[#FF8C00]">전체 디스크 접근</span> 항목에서
+            관리하세요.
+          </li>
+        </ul>
+
         <button
-          className={`w-[95%] h-[50px] rounded-full mx-auto my-[10px] text-2xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00] ${
+          className={`w-[95%] h-[50px] rounded-full mx-auto my-[10px] text-xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00] ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           onClick={handleStart}
@@ -153,9 +125,7 @@ function Info() {
         </button>
 
         {activeApp && (
-          <div className="mt-4 text-center text-lg text-[#333]">
-            현재 활성화된 앱: {activeApp}
-          </div>
+          <div className="mt-4 text-center text-lg text-[#333]"></div>
         )}
       </div>
     </div>
