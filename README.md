@@ -236,7 +236,7 @@
   - Node.js 환경에서 실행되며,
     Electron의 주요 기능(예: 윈도우 생성, 파일 시스템 접근, 네이티브 모듈 제어 등)을 담당
 
-  ```jsx
+  ```
   const { ipcMain } = require("electron");
 
   ipcMain.handle("fetch-user-data", async (event, data) => {
@@ -249,7 +249,7 @@
 
   - 웹 페이지와 같은 역할을 하며, 실제 사용자 인터페이스(UI)를 담당
 
-  ```jsx
+  ```
   const { ipcRenderer } = require("electron");
   ipcRenderer.send("get-user-data", { userId: 123 });
   ```
@@ -285,7 +285,7 @@
 - `loadingProgress`: 매번 `requestAnimationFrame`이 호출될 때마다 실행되며,
   `elapsed`는 경과 시간을 계산합니다. 이 값을 사용해 로딩 진행 상태를 업데이트합니다.
 
-      ```jsx
+      ```
       const loadingProgress = (currentTime) => {
         const elapsed = currentTime - start;
         const newProgress = Math.min((elapsed / duration) * 100, 100);
@@ -314,7 +314,7 @@
   각 서브 메뉴 항목을 반복문을 통해 처리합니다. - 스크립트 내에서 에러가 발생하면, 해당 에러를 `try...on error` 블록에서 처리하여
   에러 메시지를 반환합니다. - **주요 코드**
 
-          ```jsx
+          ```
           const appleScript = `
           tell application "System Events"
               tell process "Figma"
@@ -349,7 +349,7 @@
       - 파싱된 메뉴 항목은 `resolve(menuItems)`를 통해 반환되며,
         실패할 경우 `try-catch` 문의 `reject`를 호출하여 에러 처리 핸들링을 하였습니다.
 
-            ```jsx
+            ```
             exec(
               `osascript -e "${appleScript.replace(/"/g, '\\"')}"`,
               (error, stdout, stderr) => {
@@ -377,7 +377,7 @@
     - 단축키가 이미 존재하는지 확인하여 만약 단축키가 존재하면,
       그 값을 `subItemShortcut` 변수에 할당합니다.
 
-          ```jsx
+          ```
           if exists (attribute "AXMenuItemCmdKey" of subItem) then
               set subItemShortcut to value of attribute "AXMenuItemCmdKey" of subItem
           end if
@@ -397,7 +397,7 @@
 
     - 각 modifier가 1일 때 해당 키를 `shortcutModifiers`에 추가합니다.
 
-    ```jsx
+    ```
     if subItemShortcut is "" then
         set shortcutModifiers to ""
 
@@ -434,7 +434,7 @@
        `shortcutModifiers`와 결합하여 최종 단축키를 생성합니다.
        생성하게 된다면 예를 들어, `⌘C`와 같은 단축키가 만들어집니다.
 
-       ```jsx
+       ```
        if exists (attribute "AXMenuItemCmdChar" of subItem) then
            set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
            if commandChar is not missing value then
@@ -557,3 +557,14 @@
 </aside>
 
 ### 프로젝트를 마치며…
+
+배움에는 끝이 없다는 것을 느낀 프로젝트였습니다.<br>
+주니어 개발자로서 첫 걸음을 내디디며, 아이디어 구상부터 기획, 디자인, 개발 과정까지, 원하는 결과를 얻기 위해 처음에 구축한 코드들을 모두 뒤엎고 새로운 방식을 시도하면서 겪었던 트러블슈팅과 그 안에서의 끊임없는 회고를 통해 많은 성장을 이룰 수 있었습니다.
+
+Electron 프레임워크를 처음 접하면서 ipc를 통해 데이터가 오가는 흐름을 이해하고, 웹뿐만 아니라 앱의 세계 역시 무궁무진하다는 것을 배웠습니다. 이 과정에서, 저는 앞으로 어떤 서비스를 만들고, 어떤 개발자로 성장할 것인지에 대해 깊이 고민하게 되었습니다.
+
+가장 명확했던 점은, 이 모든 과정들이 저에게 끊임없는 배움의 연속이었다는 것입니다. 스스로 정한 기한 안에 칸반을 해결해 나가며 중심을 잡아야 하는 순간들이 많았습니다.
+
+특히, 완성도 높은 프로젝트를 마무리하려면 명확한 목적성과 방향성이 필요하다고 생각했고, UI/UX를 구현하며 중요하게 생각한 방향성은 "해당 서비스를 이용하는 사용자의 입장이라면 어떨까? 제 3자의 입장으로 생각하는 것"이었습니다.
+
+그렇게 생각하게 된 이유는 저는 "개발"이라는건 무궁무진한 웹앱의 세계를 사람들에게 더 접근성 좋게 다가가게 해주는 하나의 도구로 보고 있습니다. 그 도구를 어떻게 잘 활용할지는 제 몫이자 역량이라고 생각하며, 앞으로 어떤 서비스를 중점적으로 개발할지에 대한 폭넓은 경험을 얻게 해준 소중한 프로젝트였습니다.
