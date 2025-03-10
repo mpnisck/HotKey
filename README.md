@@ -480,12 +480,12 @@
   - 단축키 특수기호를 다 가져오는데 불필요한 특수기호까지 불러와지는 상황
   - **Case 1**
     <img src="READMEIMG/image 9.png" alt="case1"/>
-    <img src="READMEIMG/image_(1).png" alt="case2"/>
+    <img src="READMEIMG/image_(1).png" alt="case1"/>
   - **Case 2**
-    <img src="READMEIMG/image_(17)마크업.png" alt="case2"/>
+    <img src="READMEIMG/case2.png" alt="case2"/>
 
   - **Case 3**
-    <img src="READMEIMG/case3.png" alt="case2"/>
+    <img src="READMEIMG/case3.png" alt="case3"/>
 
 - **해결 방안(~ing)**
   - `실제 UI 메뉴바의 아이콘 !== 추출된 메뉴바의 아이콘`이 왜 다른지?
