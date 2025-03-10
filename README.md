@@ -169,13 +169,11 @@
 ### 필터링된 단축키 정보 안내
 
 데이터를 불러오는 동안 로딩 애니메이션이 나타나고 정보보기 버튼을 클릭하면
-
 실행했던 앱의 단축키 정보가 보여진 후, 사용자가 특수기호를 입력했을 때 필터링된 단축키가 나타납니다.
 
 ### 가상키보드을 통한 키보드 액션
 
 사용자의 키보드 액션을 감지하여 키보드뷰어내에 사용자가 어떤 키보드를 눌렀는지
-
 직관적인 UI를 통해 사용자가 키 입력을 인식하기 쉽게 만들어줍니다.
 
 <aside>
@@ -419,23 +417,21 @@
 
 ### 메뉴바 단축키 문자 처리
 
-1. `AXMenuItemCmdKey` 속성 사용
+1.  `AXMenuItemCmdKey` 속성 사용
 
-   - AppleScript에서 `AXMenuItemCmdKey` 의 메뉴 항목의 단축키를 나타내는 속성으로
-     메뉴 항목에 할당된 단축키 (`⌘C`, `⌘S`)를 가져옵니다.
+    - AppleScript에서 `AXMenuItemCmdKey` 의 메뉴 항목의 단축키를 나타내는 속성으로
+      메뉴 항목에 할당된 단축키 (`⌘C`, `⌘S`)를 가져옵니다.
 
-     - `AXMenuItemCmdChar` 속성이 존재하면 그 값을 `commandChar`에 저장하고,
-       `shortcutModifiers`와 결합하여 최종 단축키를 생성합니다.
-       생성하게 된다면 예를 들어, `⌘C`와 같은 단축키가 만들어집니다.
+      - `AXMenuItemCmdChar` 속성이 존재하면 그 값을 `commandChar`에 저장하고,
+        `shortcutModifiers`와 결합하여 최종 단축키를 생성합니다.
+        생성하게 된다면 예를 들어, `⌘C`와 같은 단축키가 만들어집니다.
 
-       ```
-       if exists (attribute "AXMenuItemCmdChar" of subItem) then
-           set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
-           if commandChar is not missing value then
-               set subItemShortcut to shortcutModifiers & commandChar
-           end if
-       end if
-       ```
+            if exists (attribute "AXMenuItemCmdChar" of subItem) then
+                set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
+                if commandChar is not missing value then
+                    set subItemShortcut to shortcutModifiers & commandChar
+                end if
+            end if
 
 <aside>
 
