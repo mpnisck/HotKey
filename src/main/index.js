@@ -76,6 +76,33 @@ tell application "System Events"
                             if (modNum div 8 mod 2 is 1) then
                                 set shortcutModifiers to shortcutModifiers & "⌃"
                             end if
+                            if (modNum div 32 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "Fn"
+                            end if
+                            if (modNum div 64 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⌫"
+                            end if
+                            if (modNum div 128 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⇥"
+                            end if
+                            if (modNum div 256 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⎋"
+                            end if
+                            if (modNum div 8192 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "←"
+                            end if
+                            if (modNum div 16384 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "→"
+                            end if
+                            if (modNum div 32768 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "↑"
+                            end if
+                            if (modNum div 65536 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "↓"
+                            end if
+                            if (modNum div 2097152 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⏎"
+                            end if
                         end if
                     end if
 
@@ -125,17 +152,11 @@ function processShortcut(shortcut) {
     processedShortcut = processedShortcut.replace("⌃", "").trim();
   }
 
-  if (
-    (processedShortcut.includes("⇧") || processedShortcut.includes("⌥")) &&
-    !processedShortcut.includes("⌘")
-  )
-    processedShortcut = processedShortcut
-      .replace(/⇧(?! )/, "⇧")
-      .replace(/⌥(?! )/, "⌥")
-      .replace(/⌘(?! )/, "⌘")
-      .replace(/\//g, "/")
-      .trim();
-
+  if (processedShortcut.includes(" ")) {
+    if (processedShortcut.includes(" ")) {
+      processedShortcut = processedShortcut.replace(" ", "⌘").trim();
+    }
+  }
   return processedShortcut;
 }
 
