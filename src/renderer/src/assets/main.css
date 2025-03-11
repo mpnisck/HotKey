@@ -1,5 +1,30 @@
 @import "tailwindcss";
 
+@layer components {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 100px;
+  }
+
+  ::-webkit-scrollbar-track:hover {
+    background-color: transparent;
+  }
+
+  div:hover::-webkit-scrollbar-thumb {
+    background-color: #333;
+    cursor: pointer;
+  }
+}
+
 body {
   overflow: hidden;
   background-size: cover;
