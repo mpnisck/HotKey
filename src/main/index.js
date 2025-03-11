@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, globalShortcut, ipcMain } from "electron";
+import { app, shell, BrowserWindow, ipcMain } from "electron";
 import { join } from "path";
 import { exec } from "child_process";
 
@@ -118,23 +118,50 @@ end tell
   });
 }
 
+function processShortcut(shortcut) {
+  let processedShortcut = shortcut;
+
+  if (processedShortcut.includes("⌃")) {
+    processedShortcut = processedShortcut.replace("⌃", "").trim();
+  }
+
+  if (
+    (processedShortcut.includes("⇧") || processedShortcut.includes("⌥")) &&
+    !processedShortcut.includes("⌘")
+  )
+    processedShortcut = processedShortcut
+      .replace(/⇧(?! )/, "⇧")
+      .replace(/⌥(?! )/, "⌥")
+      .replace(/⌘(?! )/, "⌘")
+      .replace(/\//g, "/")
+      .trim();
+
+  return processedShortcut;
+}
+
 function parseMenuItems(stdout) {
   try {
     const items = stdout.trim().split(",");
     const menuItems = [];
 
-    for (let i = 0; i < items.length; i += 2) {
+    for (let i = 0; i < items.length; i++) {
       if (items[i] && items[i + 1]) {
         const name = items[i].trim();
-        const shortcut = items[i + 1].trim();
+        let shortcut = items[i + 1].trim();
+
+        if (shortcut.startsWith("shortcut:")) {
+          shortcut = shortcut.replace(/^shortcut:/, "").trim();
+        }
 
         if (
           name.startsWith("name:") &&
           isValidMenuItem(name.replace(/^name:/, "").trim())
         ) {
+          shortcut = processShortcut(shortcut);
+
           menuItems.push({
             name: name.replace(/^name:/, "").trim(),
-            shortcut: shortcut.replace(/^shortcut:/, "").trim() || "없음",
+            shortcut: shortcut || "없음",
           });
         }
       }
@@ -170,27 +197,6 @@ function setupIpcHandlers() {
     } catch (error) {
       console.error("get-active-app 오류:", error);
       throw error;
-    }
-  });
-}
-
-function setupKeyboardListeners() {
-  globalShortcut.register("Tab", async () => {
-    try {
-      const activeApp = await getActiveApp();
-      console.log("이것은 메인의 활성화된 앱: ", activeApp);
-
-      if (!activeApp) {
-        console.error("활성화된 앱을 찾을 수 없습니다.");
-        return;
-      }
-      const menuItems = await getMacMenuBarInfo(activeApp);
-
-      if (menuItems) {
-        return menuItems;
-      }
-    } catch (error) {
-      console.error("Tab 키 입력 중 오류 발생:", error);
     }
   });
 }
@@ -244,7 +250,6 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
   setupIpcHandlers();
-  setupKeyboardListeners();
 });
 
 app.on("activate", () => {

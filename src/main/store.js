@@ -14,7 +14,7 @@ const useHotkeyStore = create((set) => ({
   isKeyActive: false,
   pressedKeys: new Set(),
   keyboardKeys: new Set(),
-  showMenuData: false,
+  showMenuData: true,
 
   setMenuData: (data) => set({ menuData: data }),
   setActiveApp: (app) => set({ activeApp: app }),
