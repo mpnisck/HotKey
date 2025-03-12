@@ -376,7 +376,7 @@ function Hotkey() {
       </div>
 
       <button
-        className="p-3 bg-[#FE8E00] text-[#fff] rounded mb-4 cursor-pointer"
+        className="p-3 bg-[#FE8E00] text-[#fff] rounded my-4 cursor-pointer"
         onClick={() => setShowMenuData((prev) => !prev)}
       >
         {showMenuData ? "정보 숨기기" : "정보 보기"}

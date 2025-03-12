@@ -145,7 +145,7 @@ end tell
   });
 }
 
-function processShortcut(shortcut) {
+function processShortcut(shortcut, tab = "") {
   let processedShortcut = shortcut;
 
   if (processedShortcut.includes("⌃")) {
@@ -153,10 +153,22 @@ function processShortcut(shortcut) {
   }
 
   if (processedShortcut.includes(" ")) {
-    if (processedShortcut.includes(" ")) {
-      processedShortcut = processedShortcut.replace(" ", "⌘").trim();
-    }
+    processedShortcut = processedShortcut.replace(" ", "⌘").trim();
   }
+
+  if (
+    tab === "View" &&
+    processedShortcut.length === 1 &&
+    /[a-zA-Z]/.test(processedShortcut)
+  ) {
+    processedShortcut = "⇧" + processedShortcut;
+  } else if (
+    processedShortcut.length === 1 &&
+    /[a-zA-Z]/.test(processedShortcut)
+  ) {
+    processedShortcut = "⌘" + processedShortcut;
+  }
+
   return processedShortcut;
 }
 
