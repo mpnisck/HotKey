@@ -45,7 +45,6 @@ function Hotkey() {
     setIsShiftPressed,
     setIsFnPressed,
     setIsKeyActive,
-    setShowMenuData,
     isCommandPressed,
     isOptionPressed,
     isControlPressed,
@@ -295,21 +294,17 @@ function Hotkey() {
     : menuData;
 
   return (
-    <div className="w-[95%] h-[800px] m-auto flex flex-col">
-      <div className="flex justify-between items-center p-7 bg-[#333] text-[#fff] rounded">
-        <h1 className="text-2xl font-semibold">단축키 정보</h1>
+    <div className="w-[95%] h-[670px] m-auto flex flex-col">
+      <div className="flex justify-between items-center p-4 bg-[#333] text-[#fff] rounded">
+        <h1 className="text-lg font-semibold">단축키 정보</h1>
         <p className="text-[#666]">
-          <span className="text-xl font-semibold bg-[#FE8E00] text-[#fff] py-2 px-5 rounded-full">
+          <span className="text-lg font-semibold bg-[#FE8E00] text-[#fff] py-2 px-5 rounded-full">
             Figma
           </span>
         </p>
       </div>
 
       <div className="bg-[#fff] shadow-md rounded-lg p-4 mt-4">
-        <div className="flex items-center mb-4">
-          <h2 className="text-xl font-semibold">키보드 뷰어</h2>
-        </div>
-
         <div className="bg-gray-100 rounded-xl p-4 shadow-inner border border-gray-200">
           {macBookProKeyboardLayout.map((row, rowIndex) => (
             <div
@@ -354,7 +349,7 @@ function Hotkey() {
                 return (
                   <div
                     key={`key-${key}-${rowIndex}-${keyIndex}`}
-                    className={`${specialKeyWidths[key] || "w-12"} h-8 rounded-md text-center flex items-center justify-center font-medium cursor-default transition-all ease-in-out ${getKeyStyle(key)} ${isSpecialKey ? "text-xs" : "text-sm"}`}
+                    className={`${specialKeyWidths[key] || "w-12"} h-7 rounded-md text-center flex items-center justify-center font-medium cursor-default transition-all ease-in-out ${getKeyStyle(key)} ${isSpecialKey ? "text-xs" : "text-xs"}`}
                   >
                     {key === "Meta"
                       ? "⌘"
@@ -374,13 +369,6 @@ function Hotkey() {
           ))}
         </div>
       </div>
-
-      <button
-        className="p-3 bg-[#FE8E00] text-[#fff] rounded my-4 cursor-pointer"
-        onClick={() => setShowMenuData((prev) => !prev)}
-      >
-        {showMenuData ? "정보 숨기기" : "정보 보기"}
-      </button>
 
       {isLoading && (
         <div className="flex items-center justify-center py-8">

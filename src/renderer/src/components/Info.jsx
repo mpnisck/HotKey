@@ -46,7 +46,7 @@ function Info() {
   };
 
   return (
-    <div className="w-fit h-[900px] m-auto flex flex-col justify-center gap-[2rem]">
+    <div className="w-fit h-[700px] m-auto flex flex-col justify-center gap-[2rem]">
       <div className="flex gap-[10px] items-center">
         <img src={logoImgUrl} alt="HotKey Logo" className="block w-[60px]" />
         <img
@@ -57,16 +57,13 @@ function Info() {
       </div>
       <div className="contentWrap w-fit flex flex-col tracking-tighter">
         <div className="flex items-center gap-[0.5rem] mt-[1rem]">
-          <h1 className="flex justify-center items-center w-[25%] h-[40px] bg-[#ff8c00] text-[#fff] text-lg rounded-t-lg">
+          <h1 className="flex justify-center items-center w-[30%] h-[35px] bg-[#ff8c00] text-[#fff] text-sm font-medium rounded-t-lg">
             사용자 가이드
           </h1>
-          <h2 className="font-medium text-[#FF8C00]">
-            앱 사용을 위해 꼭 설정해 주세요!
-          </h2>
         </div>
 
         <div className="mb-[2rem] py-[1rem] bg-[#f6f6f6] shadow-sm">
-          <p className="text-[#333] text-lg text-center leading-8">
+          <p className="text-[#333] text-base text-center leading-7">
             이 앱은 활성화된 메뉴바의 단축키 정보를 가져오고 있어요
             <br />
             <span
@@ -75,13 +72,16 @@ function Info() {
             >
               사용 시작
             </span>
-            버튼을 누르고 원하는 앱을 실행해 보세요!
+            버튼을 누르고{" "}
+            <span className="text-[#FF8C00] font-semibold">
+              피그마 앱을 꼭 실행해 주세요!
+            </span>
           </p>
         </div>
 
-        <ul className="list-disc leading-7 text-[#777] mb-[4rem]">
+        <ul className="list-disc leading-7 text-[#777] text-sm mb-[4rem]">
           <li className="list-none">
-            <h3 className="text-lg text-[#000] font-bold py-[0.5rem]">
+            <h3 className="text-base text-[#000] font-bold py-[0.5rem]">
               macOS에서 개인정보 보호 해제
             </h3>
           </li>

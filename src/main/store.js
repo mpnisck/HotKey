@@ -30,12 +30,6 @@ const useHotkeyStore = create((set) => ({
   setIsFnPressed: (pressed) =>
     set({ isFnPressed: pressed, isKeyActive: pressed }),
   setIsKeyActive: (active) => set({ isKeyActive: active }),
-  setShowMenuData: (value) =>
-    set((state) => {
-      const newShowMenuData =
-        typeof value === "function" ? value(state.showMenuData) : value;
-      return { showMenuData: newShowMenuData };
-    }),
 
   addPressedKey: (key) =>
     set((state) => ({
