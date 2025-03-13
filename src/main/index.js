@@ -1,7 +1,8 @@
-import { app, shell, BrowserWindow, ipcMain } from "electron";
+import { app, shell, BrowserWindow, ipcMain, globalShortcut } from "electron";
 import { join } from "path";
 import { exec } from "child_process";
 
+let mainWindow;
 function isValidMenuItem(name) {
   return name !== "" && !name.includes("비활성화된");
 }
@@ -145,7 +146,7 @@ end tell
   });
 }
 
-function processShortcut(shortcut) {
+function processShortcut(shortcut, tab = "") {
   let processedShortcut = shortcut;
 
   if (processedShortcut.includes("⌃")) {
@@ -153,10 +154,22 @@ function processShortcut(shortcut) {
   }
 
   if (processedShortcut.includes(" ")) {
-    if (processedShortcut.includes(" ")) {
-      processedShortcut = processedShortcut.replace(" ", "⌘").trim();
-    }
+    processedShortcut = processedShortcut.replace(" ", "⌘").trim();
   }
+
+  if (
+    tab === "View" &&
+    processedShortcut.length === 1 &&
+    /[a-zA-Z]/.test(processedShortcut)
+  ) {
+    processedShortcut = "⇧" + processedShortcut;
+  } else if (
+    processedShortcut.length === 1 &&
+    /[a-zA-Z]/.test(processedShortcut)
+  ) {
+    processedShortcut = "⌘" + processedShortcut;
+  }
+
   return processedShortcut;
 }
 
@@ -222,25 +235,41 @@ function setupIpcHandlers() {
   });
 }
 
-function slideInWindow(mainWindow) {
-  let x = -800;
-  const targetX = 0;
+function fadeInWindow(mainWindow) {
+  let opacity = 0;
+  mainWindow.setOpacity(opacity);
+
   const interval = setInterval(() => {
-    if (x >= targetX) {
+    if (opacity >= 1) {
       clearInterval(interval);
     } else {
-      x += 10;
-      mainWindow.setBounds({ x, y: 0, width: 610, height: 940 });
+      opacity += 0.05;
+      mainWindow.setOpacity(opacity);
     }
-  }, 6);
+  }, 10);
+}
+
+function fadeOutWindow(mainWindow) {
+  let opacity = 1;
+  mainWindow.setOpacity(opacity);
+
+  const interval = setInterval(() => {
+    if (opacity <= 0) {
+      clearInterval(interval);
+      mainWindow.hide();
+    } else {
+      opacity -= 0.05;
+      mainWindow.setOpacity(opacity);
+    }
+  }, 10);
 }
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
-    width: 610,
-    height: 940,
-    x: 0,
-    y: 0,
+  mainWindow = new BrowserWindow({
+    width: 500,
+    height: 700,
+    x: -0,
+    y: -0,
     frame: true,
     show: false,
     webPreferences: {
@@ -253,7 +282,7 @@ function createWindow() {
 
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
-    slideInWindow(mainWindow);
+    fadeInWindow(mainWindow);
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -268,8 +297,29 @@ function createWindow() {
   }
 }
 
+function toggleWindow() {
+  if (!mainWindow) {
+    createWindow();
+  } else {
+    if (mainWindow.isVisible()) {
+      fadeOutWindow(mainWindow);
+    } else {
+      mainWindow.show();
+      mainWindow.focus();
+      fadeInWindow(mainWindow);
+    }
+  }
+}
+
+function setupGlobalShortcut() {
+  globalShortcut.register("Command+1", toggleWindow);
+  globalShortcut.register("Option+1", toggleWindow);
+  globalShortcut.register("Shift+1", toggleWindow);
+}
+
 app.whenReady().then(() => {
   createWindow();
+  setupGlobalShortcut();
   setupIpcHandlers();
 });
 
@@ -278,5 +328,11 @@ app.on("activate", () => {
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("will-quit", () => {
+  globalShortcut.unregisterAll();
 });
