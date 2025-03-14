@@ -82,7 +82,7 @@ function Info() {
           </p>
         </div>
 
-        <ul className="list-disc leading-7 text-[#777] text-sm mb-[4rem]">
+        <ul className="list-disc leading-7 text-[#777] text-sm mb-[2rem]">
           <li className="list-none">
             <h3 className="text-base text-[#000] font-bold py-[0.5rem]">
               macOS에서 개인정보 보호 해제
