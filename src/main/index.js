@@ -317,10 +317,17 @@ function setupGlobalShortcut() {
   globalShortcut.register("Shift+1", toggleWindow);
 }
 
+const openSecuritySet = () => {
+  shell.openExternal(
+    "x-apple.systempreferences:com.apple.preference.security?Privacy"
+  );
+};
+
 app.whenReady().then(() => {
   createWindow();
   setupGlobalShortcut();
   setupIpcHandlers();
+  openSecuritySet();
 });
 
 app.on("activate", () => {

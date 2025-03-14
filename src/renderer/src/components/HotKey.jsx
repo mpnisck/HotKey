@@ -117,7 +117,9 @@ function Hotkey() {
         localStorage.removeItem("menuData");
       }
     } catch (error) {
-      setError("메뉴 항목을 가져오는 중에 오류가 발생했습니다.");
+      setError(
+        "시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용에서 앱 허용을 해 주세요"
+      );
       setMenuData({});
       localStorage.removeItem("menuData");
     } finally {
@@ -381,7 +383,9 @@ function Hotkey() {
         </div>
       )}
 
-      {error && <div className="text-center text-[#f00] p-4">{error}</div>}
+      {error && (
+        <div className="text-center text-[#f00] p-2 text-sm">{error}</div>
+      )}
 
       {showMenuData &&
         !isLoading &&

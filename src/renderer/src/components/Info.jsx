@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import textImgUrl from "../assets/HotKey.png";
 import logoImgUrl from "../assets/hotkey_icon.png";
+import accessImgUrl from "../assets/UniversalAccess-Icon.png";
 
 function Info() {
   const navigate = useNavigate();
@@ -62,17 +63,19 @@ function Info() {
           </h1>
         </div>
 
-        <div className="mb-[2rem] py-[1rem] bg-[#f6f6f6] shadow-sm">
+        <div className="mb-[2rem] p-[1rem] bg-[#f6f6f6] shadow-sm">
           <p className="text-[#333] text-base text-center leading-7">
             이 앱은 활성화된 메뉴바의 단축키 정보를 가져오고 있어요
             <br />
+            손쉬운 사용 허용 후{" "}
             <span
-              className="inline mr-1.5 px-5 py-1 text-sm
+              className="inline mr-1.5 px-4 py-1 text-sm
              text-[#fff] bg-[#000] rounded-full"
             >
               사용 시작
             </span>
-            버튼을 누르고{" "}
+            버튼을 누르고
+            <br />
             <span className="text-[#FF8C00] font-semibold">
               피그마 앱을 꼭 실행해 주세요!
             </span>
@@ -100,17 +103,24 @@ function Info() {
             Apple 메뉴 &gt; 시스템 설정 &gt; 개인정보 보호 및 보안
           </li>
           <li className="ml-[1rem]">
-            사이드바에서
-            <span className="text-[#FF8C00]"> 개인정보 보호 및 보안</span> 을
-            클릭 (아래로 스크롤해야 할 수 있어요.)
+            <span className="inline-block align-middle w-[21px] h-[21px] mr-1">
+              <img src={accessImgUrl} alt="AccessIcon" />
+            </span>
+            손쉬운 사용에서 + 버튼을 통해 응용 프로그램 중 HotKey앱을 추가
           </li>
           <li className="ml-[1rem]">
-            위치, 카메라, 마이크 등의 권한을 관리하세요.
+            HotKey 앱 제어를 허용 후 사용시작을 눌러주세요!
+          </li>
+          <li className="list-none">
+            <h3 className="text-base text-[#000] font-bold py-[0.5rem]">
+              HotKey 사용법
+            </h3>
           </li>
           <li className="ml-[1rem]">
-            전체 디스크 접근 권한을 설정하려면{" "}
-            <span className="text-[#FF8C00]">전체 디스크 접근</span> 항목에서
-            관리하세요.
+            작업환경에서 원하는 단축키의 아이콘{" "}
+            <span className="text-[#FF8C00] font-semibold">(예시 : ⌘ + 1)</span>{" "}
+            을 눌러보세요!
+            <br />
           </li>
         </ul>
 
