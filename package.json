@@ -57,14 +57,10 @@
       "resources/**/*"
     ],
     "mac": {
+      "identity": null,
+      "hardenedRuntime": false,
       "icon": "build/icon.icns",
       "category": "public.app-category.productivity"
-    },
-    "win": {
-      "icon": "build/icon.ico"
-    },
-    "linux": {
-      "icon": "build/icon.png"
     }
   }
 }
