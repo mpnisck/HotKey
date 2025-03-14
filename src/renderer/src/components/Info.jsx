@@ -118,7 +118,7 @@ function Info() {
           </li>
           <li className="ml-[1rem]">
             작업환경에서 원하는 단축키의 아이콘{" "}
-            <span className="text-[#FF8C00] font-semibold">(예시 : ⌘ + 1)</span>{" "}
+            <span className="text-[#FF8C00] font-semibold">(예시 : ⌘ 1)</span>{" "}
             을 눌러보세요!
             <br />
           </li>
