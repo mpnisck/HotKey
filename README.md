@@ -6,6 +6,7 @@
 ## HotKey 앱 다운로드
 
 - https://hotkey-v2.netlify.app/
+  [![Download the app](READMEIMG/downloadPage.png)](https://hotkey-v2.netlify.app/)
 
 ## 목차
 
@@ -28,6 +29,7 @@
 ### 사용시작 버튼 원클릭으로 메뉴바의 단축키 정보 수집
 
 앱이 실행되었다는 로딩 애니메이션이 끝나면 가이드 안내 페이지가 나타나고<br>
+개인정보 보호 해제를 위해 사용자 시스템설정을 자동으로 실행 시켜주어 안내 화면에 맞춰 허용해주고<br>
 `사용시작` 버튼을 클릭 후 작업하고 있던 앱을 실행시키면 활성화된 메뉴바에 있는 단축키 정보를 수집합니다.
 
 <img src="READMEIMG/feat 1.gif" alt="feat" />
