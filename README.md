@@ -84,35 +84,35 @@ HotKey 앱 화면이 열리고 다시 `⌘ 1` 누르면 앱이 닫아집니다.
 
 ![React](https://img.shields.io/badge/React--fff?style=for-the-badge&logo=react&logoColor=fff&logoSize=auto&label=react&labelColor=%2361DAFB&color=%2361DAFB)
 
-- **컴포넌트 기반 구조**
+- **컴포넌트 기반 구조**<br>
   UI를 작은 컴포넌트로 나누어 관리하고, 재사용하며 유지보수와 확장성 측면에 유리합니다.
 
-- **빠르고 동적인 UI**
+- **빠르고 동적인 UI**<br>
   React의 상태 관리와 프로젝트 기능 중 키보드 액션을 가상키보드내에 동적인 UI를 제공하기 위해서 사용하기에 적합하다고 판단하였습니다.
 
-- **호환성**
+- **호환성**<br>
   React는 다양한 라이브러리, 도구, 플러그인과 호환되므로 Tailwind, GitHub Release 등과 쉽게 통합 가능하다고 판단하였습니다.
 
 ![Electron](https://img.shields.io/badge/electron--Label?style=for-the-badge&logo=electron&logoColor=fff&logoSize=autoa&label=Electron&labelColor=%2347848F&color=47848F)
 
-- **웹 기술을 사용한 데스크탑 앱 개발**
+- **웹 기술을 사용한 데스크탑 앱 개발**<br>
   HTML, CSS, JavaScript을 통해 웹 개발을 진행한 적이 있어 3주의 단기 프로젝트 기간동안 적용하기에 적합하다고 판단하였습니다.
 
-- **강력한 Node.js 통합**
+- **강력한 Node.js 통합**<br>
   일렉트론은 Node.js와 통합되어 있어 파일 시스템 접근, 데이터베이스 연결, 네트워크 요청 처리 등 다양한 서버 측 작업을 하기에 수월하다고 판단하였습니다.
 
 ![TailwindCSS](https://img.shields.io/badge/tailwindcss--fff?style=for-the-badge&logo=tailwindcss&logoColor=fff&logoSize=auto&label=tailwindcss&labelColor=%2306B6D4&color=%2306B6D4)
 
-- **유틸리티 퍼스트 접근법**
+- **유틸리티 퍼스트 접근법**<br>
   유틸리티 클래스를 제공하여 CSS 파일을 따로 작성하지 않고 HTML 코드에서 직접 스타일을 적용하여 필요한 스타일을 빠르고 유연하게 대응할 수 있다는 점이 매력적으로 느껴져 선정하게 되었습니다.
 
 ![AppleScript](https://img.shields.io/badge/AppleScript--666?style=for-the-badge&logo=path%20d%3D%22M12.152%206.896c-.948%200-2.415-1.078-3.96-1.04-2.04.027-3.91%201.183-4.961%203.014-2.117%203.675-.546%209.103%201.519%2012.09%201.013%201.454%202.208%203.09%203.792%203.039%201.52-.065%202.09-.987%203.935-.987%201.831%200%202.35.987%203.96.948%201.637-.026%202.676-1.48%203.676-2.948%201.156-1.688%201.636-3.325%201.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04%202.48-4.494%202.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675%201.09-4.61%201.09zM15.53%203.83c.843-1.012%201.4-2.427%201.245-3.83-1.207.052-2.662.805-3.532%201.818-.78.896-1.454%202.338-1.273%203.714%201.338.104%202.715-.688%203.559-1.701%22&logoColor=000&logoSize=auto&label=AppleScript&labelColor=%23FFFFFF&color=%23666)
 
-- **macOS 시스템 환경 제어 가능**
+- **macOS 시스템 환경 제어 가능**<br>
   Electron 애플리케이션 내에서 AppleScript를 사용하면 macOS에서만 제공하는 시스템 환경을 제어할 수 있기에
   사용자의 시스템 앱의 메뉴바에 접근하기에 적합하다고 판단하였습니다.
 
-- **비동기 작업 처리**
+- **비동기 작업 처리**<br>
   Electron 환경에서는 child_process 모듈을 사용하여 비동기적으로 AppleScript를 실행할 수 있습니다.
   이로 인해 애플리케이션의 UI가 멈추지 않고 원활하게 실행됩니다.
 
@@ -122,25 +122,25 @@ HotKey 앱 화면이 열리고 다시 `⌘ 1` 누르면 앱이 닫아집니다.
 
 ![Electron-Vite](https://img.shields.io/badge/Electron--Vite--fff?style=for-the-badge&logo=Vite&logoColor=fff&logoSize=auto&label=Electron-Vite&labelColor=646CFF&color=646CFF)
 
-- **번들링 시간 단축**
+- **번들링 시간 단축**<br>
   기존 Electron은 Webpack을 사용하여 번들링을 했기 때문에 시간이 길었기에 애플리케이션 개발 시 번들링 시간을 크게 단축시킬 수 있습니다.
 
-- **빠른 UI 실행 속도**
+- **빠른 UI 실행 속도**<br>
   React와 Tailwind CSS를 사용하여 UI를 개발할 때,
   Vite의 빠른 속도 덕분에 빠르게 실행
 
-- **핫 모듈 리로드(HMR)**
+- **핫 모듈 리로드(HMR)**<br>
   Vite의 HMR(핫 모듈 리로드) 기능 덕분에 코드의 변경 사항이 즉시 반영됩니다.
   이는 빠르게 프로토타입을 만들고 테스트할 수 있게 하며, 프로젝트를 개선하는 데 유리합니다.
 
 ![Zustand](https://img.shields.io/badge/zustand--fff?style=for-the-badge&logo=zustand&logoColor=fff&logoSize=auto&label=zustand&labelColor=D97757&color=D97757)
 
-- **설정 없이 바로 사용 가능**
+- **설정 없이 바로 사용 가능**<br>
   Zustand는 복잡한 설정 없이 바로 사용할 수 있습니다.
   Redux와 같은 상태 관리 라이브러리에서는 액션, 리듀서, 스토어 등을 설정하지만
   반면에 Zustand는 이러한 설정이 필요 없어서 상태 관리가 매우 간단하고 직관적입니다.
 
-- **자동 리렌더링 최적화**
+- **자동 리렌더링 최적화**<br>
   상태를 업데이트할 때 변경된 부분만 리렌더링하도록 최적화됩니다.
   이로 인해 불필요한 리렌더링을 방지하고 애플리케이션 성능을 최적화할 수 있습니다.
 
@@ -150,21 +150,21 @@ HotKey 앱 화면이 열리고 다시 `⌘ 1` 누르면 앱이 닫아집니다.
 
 ![Prettier](https://img.shields.io/badge/Prettier--000?style=for-the-badge&logo=Prettier&logoColor=000&logoSize=auto&label=Prettier&labelColor=F7B93E&color=F7B93E)
 
-- **자동화된 코드 포매팅**
+- **자동화된 코드 포매팅**<br>
   수동으로 코드 스타일을 맞추지 않아도 되므로 코드 스타일에
   신경 쓸 필요가 없어 일관된 코드 스타일을 위해 선정하였습니다.
 
-- **생산성 향상**
+- **생산성 향상**<br>
   자동화된 도구가 포매팅을 대신 처리하므로, 기능 구현에 더 많은 시간을 할애할 수 있습니다.
 
 ![ESLint](https://img.shields.io/badge/eslint--000?style=for-the-badge&logo=eslint&logoColor=000&logoSize=auto&label=eslint&labelColor=%234B32C3&color=%234B32C3)
 
-- **버그 예방**
+- **버그 예방**<br>
   코드에서 발생할 수 있는 잠재적인 버그를 사전에 찾아주는 장점이 있습니다.
 
 ![HomeBrew](https://img.shields.io/badge/HomeBrew--000?style=for-the-badge&logo=HomeBrew&logoColor=000&logoSize=auto&label=HomeBrew&labelColor=FBB040&color=FBB040)
 
-- **패키지 관리의 효율성**
+- **패키지 관리의 효율성**<br>
   Homebrew를 사용하면 필요한 도구나 라이브러리를 간단히 설치하여 효율성이 높다고 판단하였습니다.
 
 # 개발 과정
