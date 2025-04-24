@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import useHotkeyStore from "../../../main/store";
+import useHotkeyStore from "../../main/store";
 
 const macBookProKeyboardLayout = [
   [

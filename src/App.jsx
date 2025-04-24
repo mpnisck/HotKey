@@ -1,7 +1,8 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
-import Loading from "./components/Loading";
-import Info from "./components/Info";
-import HotKey from "./components/HotKey";
+
+import Loading from "./renderer/components/Loading.jsx";
+import Info from "./renderer/components/Info.jsx";
+import HotKey from "./renderer/components/HotKey.jsx";
 
 function App() {
   return (

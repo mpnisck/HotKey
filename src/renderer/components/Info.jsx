@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import textImgUrl from "../assets/HotKey.png";
-import logoImgUrl from "../assets/hotkey_icon.png";
-import accessImgUrl from "../assets/UniversalAccess-Icon.png";
+
+import textImgUrl from "../../assets/img/hotkey_text.png";
+import logoImgUrl from "../../assets/img/hotkey_icon.png";
+import accessImgUrl from "../../assets/img/UniversalAccess-Icon.png";
 
 function Info() {
   const navigate = useNavigate();
