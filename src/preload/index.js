@@ -1,16 +1,9 @@
-import { contextBridge } from "electron"
-import { electronAPI } from "@electron-toolkit/preload"
+const { contextBridge, ipcRenderer } = require("electron");
 
-const api = {}
-
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld("electron", electronAPI)
-    contextBridge.exposeInMainWorld("api", api)
-  } catch (error) {
-    console.error(error)
-  }
-} else {
-  window.Electron = electronAPI
-  window.api = api
-}
+contextBridge.exposeInMainWorld("api", {
+  invoke: (channel, ...args) => ipcRenderer.invoke(channel, ...args),
+  on: (channel, func) => {
+    ipcRenderer.on(channel, func);
+    return () => ipcRenderer.removeListener(channel, func);
+  },
+});

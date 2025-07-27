@@ -1,0 +1,16 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "prettier.requireConfig": true,
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "css.validate": false,
+  "editor.inlineSuggest.enabled": true,
+  "window.zoomLevel": 0,
+  "editor.mouseWheelZoom": false,
+  "editor.minimap.sectionHeaderFontSize": 9,
+  "screencastMode.fontSize": 56
+}
