@@ -70,7 +70,7 @@ function Hotkey() {
     return shortcut;
   }
 
-  const processMenuItems = (items) => {
+  const processMenuItems = items => {
     return items.reduce((accumulator, item) => {
       const [category] = item.name.split(" > ");
       if (!accumulator[category]) {
@@ -87,7 +87,7 @@ function Hotkey() {
     }, {});
   };
 
-  const fetchMenuItems = async (currentApp) => {
+  const fetchMenuItems = async currentApp => {
     const storedMenuData = localStorage.getItem("menuData");
 
     if (storedMenuData) {
@@ -159,7 +159,7 @@ function Hotkey() {
 
   const filteredMenuData = isKeyActive
     ? Object.entries(menuData).reduce((acc, [category, items]) => {
-        const filteredItems = items.filter((item) => {
+        const filteredItems = items.filter(item => {
           const shortcut = item.shortcut || "";
 
           const matchConditions = [
@@ -190,10 +190,10 @@ function Hotkey() {
             },
           ];
 
-          const activeModifiers = matchConditions.filter((mod) => mod.pressed);
+          const activeModifiers = matchConditions.filter(mod => mod.pressed);
           return (
             activeModifiers.length > 0 &&
-            activeModifiers.every((mod) => mod.condition)
+            activeModifiers.every(mod => mod.condition)
           );
         });
 
@@ -205,7 +205,7 @@ function Hotkey() {
     : menuData;
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = event => {
       const key = event.key.toUpperCase();
       event.preventDefault();
       addKeyboardKey(key);
@@ -233,7 +233,7 @@ function Hotkey() {
       }
     };
 
-    const handleKeyUp = (event) => {
+    const handleKeyUp = event => {
       const key = event.key.toUpperCase();
       removeKeyboardKey(key);
 
@@ -344,7 +344,7 @@ function Hotkey() {
 
       <button
         className="p-3 bg-[#FE8E00] text-[#fff] rounded mb-4 cursor-pointer"
-        onClick={() => setShowMenuData((prev) => !prev)}
+        onClick={() => setShowMenuData(prev => !prev)}
       >
         {showMenuData ? "정보 숨기기" : "정보 보기"}
       </button>

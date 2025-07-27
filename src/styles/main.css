@@ -31,7 +31,8 @@ body {
   user-select: none;
   padding: 1rem;
   font-family:
-  -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
   line-height: 1.3;
 }
 

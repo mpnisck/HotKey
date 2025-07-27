@@ -13,7 +13,7 @@ function Loading() {
     const duration = 3000;
     const start = performance.now();
 
-    const loadingProgress = (currentTime) => {
+    const loadingProgress = currentTime => {
       const elapsed = currentTime - start;
       const newProgress = Math.min((elapsed / duration) * 100, 100);
 
