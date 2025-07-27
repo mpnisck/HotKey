@@ -218,7 +218,7 @@ function createWindow() {
     frame: true,
     show: false,
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: true,
       preload: join(__dirname, "../preload/index.js"),
       devTools: true,
@@ -229,7 +229,25 @@ function createWindow() {
     mainWindow.show();
   });
 
-  mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+  if (process.env.NODE_ENV === "development") {
+    mainWindow.loadURL("http://localhost:5173");
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+  }
+
+  mainWindow.webContents.session.webRequest.onHeadersReceived(
+    (details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          "Content-Security-Policy": [
+            "default-src 'self' 'unsafe-inline' data: http://localhost:* ws://localhost:*",
+          ],
+        },
+      });
+    }
+  );
 }
 
 app.whenReady().then(() => {
