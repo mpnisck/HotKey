@@ -1,8 +1,8 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
 
-import Loading from "./renderer/components/Loading.jsx";
-import Info from "./renderer/components/Info.jsx";
-import HotKey from "./renderer/components/HotKey.jsx";
+import Loading from "./components/Loading.jsx";
+import Info from "./components/Info.jsx";
+import Hotkey from "./components/HotkeyComponent.jsx";
 
 function App() {
   return (
@@ -10,7 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Loading />} />
         <Route path="/main" element={<Info />} />
-        <Route path="/hotkey" element={<HotKey />} />
+        <Route path="/hotkey" element={<Hotkey />} />
       </Routes>
     </HashRouter>
   );
