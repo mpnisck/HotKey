@@ -39,11 +39,12 @@ function getActiveApp() {
   });
 }
 
-function getMacMenuBarInfo() {
+function getMacMenuBarInfo(processName) {
   return new Promise((resolve, reject) => {
+    const safeProcessName = String(processName || "").replace(/"/g, '\\"');
     const appleScript = `
 tell application "System Events"
-    tell process "Figma"
+    tell process "${safeProcessName}"
         set menuItems to {}
         set menuBarItems to menu bar items of menu bar 1
         repeat with menuItem in menuBarItems
@@ -199,9 +200,9 @@ function parseMenuItems(stdout) {
 }
 
 function setupIpcHandlers() {
-  ipcMain.handle("get-menu-info", async () => {
+  ipcMain.handle("get-menu-info", async (_event, appName) => {
     try {
-      const activeApp = await getActiveApp();
+      const activeApp = appName || (await getActiveApp());
       if (!activeApp) {
         throw new Error("활성 앱 이름이 제공되지 않았습니다.");
       }
@@ -264,7 +265,7 @@ function createWindow() {
     frame: true,
     show: false,
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: true,
       preload: join(__dirname, "../preload/index.js"),
       devTools: true,
