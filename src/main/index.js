@@ -1,25 +1,8 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, shell, BrowserWindow, ipcMain, globalShortcut } from "electron";
 import { join } from "path";
 import { exec } from "child_process";
 
-const specialKeyMap = {
-  Cmd: "⌘",
-  Option: "⌥",
-  Shift: "⇧",
-  Control: "⌃",
-  Esc: "⎋",
-  Return: "⏎",
-  Delete: "⌫",
-  Space: "␣",
-};
-
-function mapSpecialKeys(shortcut) {
-  for (let key in specialKeyMap) {
-    shortcut = shortcut.replace(new RegExp(key, "g"), specialKeyMap[key]);
-  }
-  return shortcut;
-}
-
+let mainWindow;
 function isValidMenuItem(name) {
   return name !== "" && !name.includes("비활성화된");
 }
@@ -40,6 +23,7 @@ function getActiveApp() {
       `osascript -e "${activeAppScript.replace(/"/g, '\\"')}"`,
       (error, stdout) => {
         if (error) {
+          console.error("활성 앱 확인 오류:", error.message);
           reject(new Error(`활성 앱 확인 오류: ${error.message}`));
           return;
         }
@@ -61,69 +45,82 @@ function getMacMenuBarInfo() {
 tell application "System Events"
     tell process "Figma"
         set menuItems to {}
-        try
-            set menuBarItems to menu bar items of menu bar 1
-            repeat with menuItem in menuBarItems
-                set menuItemName to name of menuItem
-                set subMenuItems to menu items of menu 1 of menuItem
-                repeat with subItem in subMenuItems
-                    set subItemName to name of subItem
-                    set subItemShortcut to ""
+        set menuBarItems to menu bar items of menu bar 1
+        repeat with menuItem in menuBarItems
+            set menuItemName to name of menuItem
+            set subMenuItems to menu items of menu 1 of menuItem
+            repeat with subItem in subMenuItems
+                set subItemName to name of subItem
+                set subItemShortcut to ""
 
-                    try
-                        -- 단축키 정보 추출
-                        if exists (attribute "AXMenuItemCmdKey" of subItem) then
-                            set subItemShortcut to value of attribute "AXMenuItemCmdKey" of subItem
-                        end if
+                if exists (attribute "AXMenuItemCmdKey" of subItem) then
+                    set subItemShortcut to value of attribute "AXMenuItemCmdKey" of subItem
+                end if
 
-                        -- 모디파이어 키가 없으면 비트 연산으로 추출
-                        if subItemShortcut is "" then
-                            set shortcutModifiers to ""
+                if subItemShortcut is "" then
+                    set shortcutModifiers to ""
 
-                            if exists (attribute "AXMenuItemCmdModifiers" of subItem) then
-                                set modValue to value of attribute "AXMenuItemCmdModifiers" of subItem
-                                if modValue is not missing value then
-                                    set modNum to modValue as number
-                                    set shortcutModifiers to ""
+                    if exists (attribute "AXMenuItemCmdModifiers" of subItem) then
+                        set modValue to value of attribute "AXMenuItemCmdModifiers" of subItem
+                        if modValue is not missing value then
+                            set modNum to modValue as number
 
-                                    -- 비트 연산을 통해 각 모디파이어 키 추출
-                                    if (modNum div 1 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "Cmd" -- Cmd
-                                    end if
-                                    if (modNum div 2 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "Option" -- Option
-                                    end if
-                                    if (modNum div 4 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "Shift" -- Shift
-                                    end if
-                                    if (modNum div 8 mod 2 is 1) then
-                                        set shortcutModifiers to shortcutModifiers & "Control" -- Control
-                                    end if
-                                end if
+                            if (modNum div 1 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⌘"
                             end if
-
-                            -- 명령 문자 결합
-                            if exists (attribute "AXMenuItemCmdChar" of subItem) then
-                                set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
-                                if commandChar is not missing value then
-                                    set subItemShortcut to shortcutModifiers & commandChar
-                                end if
+                            if (modNum div 2 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⌥"
+                            end if
+                            if (modNum div 4 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⇧"
+                            end if
+                            if (modNum div 8 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⌃"
+                            end if
+                            if (modNum div 32 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "Fn"
+                            end if
+                            if (modNum div 64 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⌫"
+                            end if
+                            if (modNum div 128 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⇥"
+                            end if
+                            if (modNum div 256 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⎋"
+                            end if
+                            if (modNum div 8192 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "←"
+                            end if
+                            if (modNum div 16384 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "→"
+                            end if
+                            if (modNum div 32768 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "↑"
+                            end if
+                            if (modNum div 65536 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "↓"
+                            end if
+                            if (modNum div 2097152 mod 2 is 1) then
+                                set shortcutModifiers to shortcutModifiers & "⏎"
                             end if
                         end if
-                    on error errMsg
-                        log "Error retrieving shortcut for " & subItemName & ": " & errMsg
-                    end try
-
-                    -- 메뉴 항목과 단축키가 있으면 목록에 추가
-                    if subItemShortcut is not "" then
-                        set end of menuItems to {name:menuItemName & " > " & subItemName, shortcut:subItemShortcut}
                     end if
-                end repeat
+
+                    if exists (attribute "AXMenuItemCmdChar" of subItem) then
+                        set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
+                        if commandChar is not missing value then
+                            set subItemShortcut to shortcutModifiers & commandChar
+                        end if
+                    end if
+                end if
+
+                if subItemShortcut is not "" then
+                    set end of menuItems to {name:menuItemName & " > " & subItemName, shortcut:subItemShortcut}
+                end if
             end repeat
-            return menuItems
-        on error errMsg
-            return "Error: " & errMsg
-        end try
+        end repeat
+        return menuItems
     end tell
 end tell
     `;
@@ -131,13 +128,8 @@ end tell
     exec(
       `osascript -e "${appleScript.replace(/"/g, '\\"')}"`,
       (error, stdout, stderr) => {
-        if (error) {
-          reject(new Error(`AppleScript 실행 오류: ${error.message}`));
-          return;
-        }
-
-        if (stderr) {
-          reject(new Error(stderr));
+        if (error || stderr) {
+          reject(new Error(error || stderr));
           return;
         }
 
@@ -154,30 +146,51 @@ end tell
   });
 }
 
+function processShortcut(shortcut) {
+  let processedShortcut = shortcut;
+
+  if (processedShortcut.includes("⌃")) {
+    processedShortcut = processedShortcut.replace("⌃", "").trim();
+  }
+
+  if (processedShortcut.includes(" ")) {
+    processedShortcut = processedShortcut.replace(" ", "⌘").trim();
+  }
+
+  if (processedShortcut.length === 1 && /[a-zA-Z]/.test(processedShortcut)) {
+    processedShortcut = "⌘" + processedShortcut;
+  }
+
+  return processedShortcut;
+}
+
 function parseMenuItems(stdout) {
   try {
     const items = stdout.trim().split(",");
     const menuItems = [];
 
-    for (let i = 0; i < items.length; i += 2) {
+    for (let i = 0; i < items.length; i++) {
       if (items[i] && items[i + 1]) {
         const name = items[i].trim();
-        const shortcut = items[i + 1].trim();
+        let shortcut = items[i + 1].trim();
+
+        if (shortcut.startsWith("shortcut:")) {
+          shortcut = shortcut.replace(/^shortcut:/, "").trim();
+        }
 
         if (
           name.startsWith("name:") &&
           isValidMenuItem(name.replace(/^name:/, "").trim())
         ) {
+          shortcut = processShortcut(shortcut);
+
           menuItems.push({
             name: name.replace(/^name:/, "").trim(),
-            shortcut: mapSpecialKeys(
-              shortcut.replace(/^shortcut:/, "").trim() || "없음"
-            ),
+            shortcut: shortcut || "없음",
           });
         }
       }
     }
-
     return menuItems;
   } catch (error) {
     console.error("메뉴 항목 파싱 중 오류 발생:", error);
@@ -192,7 +205,7 @@ function setupIpcHandlers() {
       if (!activeApp) {
         throw new Error("활성 앱 이름이 제공되지 않았습니다.");
       }
-      return await getMacMenuBarInfo();
+      return await getMacMenuBarInfo(activeApp);
     } catch (error) {
       console.error("get-menu-info 오류:", error);
       throw error;
@@ -201,7 +214,11 @@ function setupIpcHandlers() {
 
   ipcMain.handle("get-active-app", async () => {
     try {
-      return await getActiveApp();
+      const activeApp = await getActiveApp();
+      if (!activeApp) {
+        throw new Error("활성화된 앱을 찾을 수 없습니다.");
+      }
+      return activeApp;
     } catch (error) {
       console.error("get-active-app 오류:", error);
       throw error;
@@ -209,16 +226,45 @@ function setupIpcHandlers() {
   });
 }
 
+function fadeInWindow(mainWindow) {
+  let opacity = 0;
+  mainWindow.setOpacity(opacity);
+
+  const interval = setInterval(() => {
+    if (opacity >= 1) {
+      clearInterval(interval);
+    } else {
+      opacity += 0.05;
+      mainWindow.setOpacity(opacity);
+    }
+  }, 10);
+}
+
+function fadeOutWindow(mainWindow) {
+  let opacity = 1;
+  mainWindow.setOpacity(opacity);
+
+  const interval = setInterval(() => {
+    if (opacity <= 0) {
+      clearInterval(interval);
+      mainWindow.hide();
+    } else {
+      opacity -= 0.05;
+      mainWindow.setOpacity(opacity);
+    }
+  }, 10);
+}
+
 function createWindow() {
-  const mainWindow = new BrowserWindow({
-    width: 610,
-    height: 940,
-    x: 0,
-    y: 0,
+  mainWindow = new BrowserWindow({
+    width: 500,
+    height: 700,
+    x: -0,
+    y: -0,
     frame: true,
     show: false,
     webPreferences: {
-      nodeIntegration: false,
+      nodeIntegration: true,
       contextIsolation: true,
       preload: join(__dirname, "../preload/index.js"),
       devTools: true,
@@ -227,38 +273,52 @@ function createWindow() {
 
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
+    fadeInWindow(mainWindow);
   });
 
-  if (process.env.NODE_ENV === "development") {
-    mainWindow.loadURL("http://localhost:5173");
-    mainWindow.webContents.openDevTools();
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: "deny" };
+  });
+
+  if (process.env.ELECTRON_RENDERER_URL) {
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
   } else {
-    if (app.isPackaged) {
-      mainWindow.loadFile(
-        join(process.resourcesPath, "app.asar", "dist", "index.html")
-      );
+    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+  }
+}
+
+function toggleWindow() {
+  if (!mainWindow) {
+    createWindow();
+  } else {
+    if (mainWindow.isVisible()) {
+      fadeOutWindow(mainWindow);
     } else {
-      mainWindow.loadFile(join(__dirname, "../../dist/index.html"));
+      mainWindow.show();
+      mainWindow.focus();
+      fadeInWindow(mainWindow);
     }
   }
-
-  mainWindow.webContents.session.webRequest.onHeadersReceived(
-    (details, callback) => {
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          "Content-Security-Policy": [
-            "default-src 'self' 'unsafe-inline' data: http://localhost:* ws://localhost:*",
-          ],
-        },
-      });
-    }
-  );
 }
+
+function setupGlobalShortcut() {
+  globalShortcut.register("Command+1", toggleWindow);
+  globalShortcut.register("Option+1", toggleWindow);
+  globalShortcut.register("Shift+1", toggleWindow);
+}
+
+const openSecuritySet = () => {
+  shell.openExternal(
+    "x-apple.systempreferences:com.apple.preference.security?Privacy"
+  );
+};
 
 app.whenReady().then(() => {
   createWindow();
+  setupGlobalShortcut();
   setupIpcHandlers();
+  openSecuritySet();
 });
 
 app.on("activate", () => {
@@ -266,5 +326,11 @@ app.on("activate", () => {
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("will-quit", () => {
+  globalShortcut.unregisterAll();
 });
