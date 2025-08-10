@@ -9,10 +9,8 @@ const useHotkeyStore = create(set => ({
   isOptionPressed: false,
   isControlPressed: false,
   isShiftPressed: false,
-  isBackspacePressed: false,
   isFnPressed: false,
   isKeyActive: false,
-  pressedKeys: new Set(),
   keyboardKeys: new Set(),
   showMenuData: true,
 
@@ -26,22 +24,9 @@ const useHotkeyStore = create(set => ({
     set({ isOptionPressed: pressed, isKeyActive: pressed }),
   setIsControlPressed: pressed => set({ isControlPressed: pressed }),
   setIsShiftPressed: pressed => set({ isShiftPressed: pressed }),
-  setIsBackspacePressed: pressed => set({ isBackspacePressed: pressed }),
   setIsFnPressed: pressed =>
     set({ isFnPressed: pressed, isKeyActive: pressed }),
   setIsKeyActive: active => set({ isKeyActive: active }),
-
-  addPressedKey: key =>
-    set(state => ({
-      pressedKeys: new Set(state.pressedKeys).add(key.toLowerCase()),
-    })),
-
-  removePressedKey: key =>
-    set(state => {
-      const newKeys = new Set(state.pressedKeys);
-      newKeys.delete(key.toLowerCase());
-      return { pressedKeys: newKeys };
-    }),
 
   addKeyboardKey: key =>
     set(state => ({
