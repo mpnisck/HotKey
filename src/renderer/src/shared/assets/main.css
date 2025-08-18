@@ -1,0 +1,268 @@
+@import "tailwindcss";
+
+@layer components {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 100px;
+  }
+
+  ::-webkit-scrollbar-track:hover {
+    background-color: transparent;
+  }
+
+  div:hover::-webkit-scrollbar-thumb {
+    background-color: #333;
+    cursor: pointer;
+  }
+}
+
+body {
+  overflow: hidden;
+  background-size: cover;
+  user-select: none;
+  padding: 1rem;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  line-height: 1.3;
+}
+
+html,
+applet,
+object,
+iframe,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+ol {
+  list-style: none;
+}
+blockquote,
+q {
+  quotes: none;
+}
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: "";
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+/* Loading Component Styles - BEM 방식 */
+.loading {
+  @apply w-full h-screen flex flex-col justify-center items-center;
+  gap: 3rem;
+  background: #fff;
+}
+
+.loading__content {
+  @apply flex flex-col items-center;
+  gap: 2rem;
+  max-width: 90%;
+  text-align: center;
+}
+
+.loading__text-image {
+  @apply block;
+  width: min(25%, 300px);
+  height: auto;
+  object-fit: contain;
+}
+
+.loading__logo-image {
+  @apply block;
+  width: min(20%, 200px);
+  height: auto;
+  object-fit: contain;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loading__message {
+  @apply text-center;
+}
+
+.loading__subtitle {
+  @apply text-lg;
+  color: #333;
+  line-height: 1.6;
+}
+
+.loading__progress {
+  @apply relative bg-gray-200 rounded-full;
+  width: min(50%, 400px);
+  height: 10px;
+  overflow: hidden;
+}
+
+.loading__progress-bar {
+  @apply h-full bg-black rounded-full;
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+.loading__progress-text {
+  @apply text-sm font-medium;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+/* 접근성을 위한 reduced motion 지원 */
+@media (prefers-reduced-motion: reduce) {
+  .loading__logo-image {
+    animation: none;
+  }
+
+  .loading__progress-bar {
+    transition: none;
+  }
+}
+
+/* 로딩화면은 항상 흰색 배경 고정 */
+.loading {
+  background: #fff !important;
+}
+
+.loading__subtitle {
+  color: #333 !important;
+}
+
+.loading__progress {
+  @apply bg-gray-200;
+}
+
+.loading__progress-bar {
+  @apply bg-black;
+}
+
+.loading__progress-text {
+  color: #666 !important;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .loading {
+    gap: 2rem;
+    padding: 1rem;
+  }
+
+  .loading__content {
+    gap: 1.5rem;
+  }
+
+  .loading__text-image {
+    width: min(40%, 250px);
+  }
+
+  .loading__logo-image {
+    width: min(30%, 150px);
+  }
+
+  .loading__subtitle {
+    @apply text-base;
+  }
+
+  .loading__progress {
+    width: 80%;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}

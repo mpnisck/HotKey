@@ -1,0 +1,66 @@
+export const macBookProKeyboardLayout = [
+  [
+    "Esc",
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "F6",
+    "F7",
+    "F8",
+    "F9",
+    "F10",
+    "F11",
+    "F12",
+    "⏻",
+  ],
+  ["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Delete"],
+  ["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\"],
+  ["한/A", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "Enter"],
+  ["Shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Shift"],
+  ["Fn", "Control", "Alt", "Meta", "Spaces", "Meta", "Alt", "←", "↑", "↓", "→"],
+];
+
+export const specialKeys = new Set([
+  "ESC",
+  "TAB",
+  "CAPS LOCK",
+  "SHIFT",
+  "FN",
+  "CONTROL",
+  "ALT",
+  "META",
+  "ENTER",
+  "DELETE",
+  "SPACES",
+  "⏻",
+  "←",
+  "↑",
+  "↓",
+  "→",
+  "한/A",
+]);
+
+export const modifierKeys = {
+  meta: { setter: "setIsCommandPressed", checker: "metaKey" },
+  alt: { setter: "setIsOptionPressed", checker: "altKey" },
+  ctrl: { setter: "setIsControlPressed", checker: "ctrlKey" },
+  shift: { setter: "setIsShiftPressed", checker: "shiftKey" },
+};
+
+export const specialKeyWidths = {
+  Esc: "w-16",
+  Tab: "w-18",
+  "한/A": "w-22",
+  Shift: "w-24",
+  Enter: "w-24",
+  Spaces: "w-64",
+  Control: "w-20",
+  Option: "w-18",
+  Meta: "w-20",
+  "←": "w-12",
+  "↑": "w-12",
+  "↓": "w-12",
+  "→": "w-12",
+};
