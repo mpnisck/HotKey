@@ -1,6 +1,11 @@
 import { specialKeys } from "../config/keyboard";
+import { MenuItem } from "../types";
 
-export const getKeyStyle = (key, keyboardKeys) => {
+export interface ProcessedMenuItems {
+  [category: string]: MenuItem[];
+}
+
+export const getKeyStyle = (key: string, keyboardKeys: Set<string>): string => {
   const upperKey = key.toUpperCase();
   const isPressed = keyboardKeys.has(upperKey);
 
@@ -10,8 +15,8 @@ export const getKeyStyle = (key, keyboardKeys) => {
   return "bg-[#fff] text-gray-800 shadow-sm hover:bg-gray-100";
 };
 
-export const processMenuItems = items => {
-  return items.reduce((accumulator, item) => {
+export const processMenuItems = (items: MenuItem[]): ProcessedMenuItems => {
+  return items.reduce((accumulator: ProcessedMenuItems, item) => {
     const [category] = item.name.split(" > ");
     if (!accumulator[category]) {
       accumulator[category] = [];

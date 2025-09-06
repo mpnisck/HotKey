@@ -1,9 +1,10 @@
+import React from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
-import Loading from "../pages/loading/Loading";
-import Info from "../pages/info/Info";
-import Hotkey from "../pages/hotkey/Hotkey";
+import Loading from "../pages/loading/loading";
+import Info from "../pages/info/info";
+import Hotkey from "../pages/hot-key/hot-key";
 
-function App() {
+function App(): React.JSX.Element {
   return (
     <HashRouter>
       <Routes>

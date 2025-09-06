@@ -1,11 +1,15 @@
+import React from "react";
 import {
   macBookProKeyboardLayout,
   specialKeyWidths,
 } from "../../shared/config/keyboard";
 import { getKeyStyle } from "../../shared/lib/keyboard";
-import PropTypes from "prop-types";
 
-function Keyboard({ keyboardKeys }) {
+interface KeyboardProps {
+  keyboardKeys: Set<string>;
+}
+
+function Keyboard({ keyboardKeys }: KeyboardProps): React.JSX.Element {
   return (
     <div className="bg-[#fff] shadow-md rounded-lg p-4 mt-4">
       <div className="bg-gray-100 rounded-xl p-4 shadow-inner border border-gray-200">
@@ -58,9 +62,5 @@ function Keyboard({ keyboardKeys }) {
     </div>
   );
 }
-
-Keyboard.propTypes = {
-  keyboardKeys: PropTypes.instanceOf(Set).isRequired,
-};
 
 export default Keyboard;

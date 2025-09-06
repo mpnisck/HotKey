@@ -1,11 +1,21 @@
 import { useEffect } from "react";
-import { useHotkeyStore } from "../../entities/hotkey";
+import { useHotkeyStore } from "../../entities/hot-key";
 import { modifierKeys } from "../../shared/config/keyboard";
 
-export const useKeyTracking = () => {
+interface UseKeyTrackingReturn {
+  keyboardKeys: Set<string>;
+  isKeyActive: boolean;
+  isCommandPressed: boolean;
+  isOptionPressed: boolean;
+  isControlPressed: boolean;
+  isShiftPressed: boolean;
+  isFnPressed: boolean;
+}
+
+export const useKeyTracking = (): UseKeyTrackingReturn => {
   const store = useHotkeyStore();
 
-  const handleKeyDown = event => {
+  const handleKeyDown = (event: KeyboardEvent): void => {
     const key = event.key.toUpperCase();
     event.preventDefault();
 
@@ -14,8 +24,8 @@ export const useKeyTracking = () => {
     let isAnyModifierActive = false;
 
     Object.values(modifierKeys).forEach(({ setter, checker }) => {
-      if (event[checker]) {
-        store[setter](true);
+      if (event[checker as keyof KeyboardEvent]) {
+        (store as any)[setter](true);
         isAnyModifierActive = true;
       }
     });
@@ -30,18 +40,18 @@ export const useKeyTracking = () => {
     }
   };
 
-  const handleKeyUp = event => {
+  const handleKeyUp = (event: KeyboardEvent): void => {
     const key = event.key.toUpperCase();
     store.removeKeyboardKey(key);
 
     Object.values(modifierKeys).forEach(({ setter, checker }) => {
-      if (!event[checker]) {
-        store[setter](false);
+      if (!event[checker as keyof KeyboardEvent]) {
+        (store as any)[setter](false);
       }
     });
 
     const hasActiveModifier = Object.values(modifierKeys).some(
-      ({ checker }) => event[checker]
+      ({ checker }) => event[checker as keyof KeyboardEvent]
     );
 
     if (!hasActiveModifier) {

@@ -1,12 +1,22 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
 
-import textImgUrl from "../../shared/assets/HotKey.png";
-import logoImgUrl from "../../shared/assets/hotkey_icon.png";
+import textImgUrl from "../../shared/assets/hotkey-text.png";
+import logoImgUrl from "../../shared/assets/hotkey-icon.png";
 
 const DEFAULT_DURATION = 3000;
 const MAX_PROGRESS = 100;
+
+interface LoadingProps {
+  duration?: number;
+  onComplete?: () => void;
+  redirectTo?: string;
+  title?: string;
+  subtitle?: string;
+  ctaText?: string;
+  textImage?: string;
+  logoImage?: string;
+}
 
 function Loading({
   duration = DEFAULT_DURATION,
@@ -17,10 +27,10 @@ function Loading({
   ctaText = "함께 시작해 볼까요?",
   textImage = textImgUrl,
   logoImage = logoImgUrl,
-}) {
-  const [progress, setProgress] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
-  const animationFrameId = useRef(0);
+}: LoadingProps): React.JSX.Element {
+  const [progress, setProgress] = useState<number>(0);
+  const [isComplete, setIsComplete] = useState<boolean>(false);
+  const animationFrameId = useRef<number>(0);
   const navigate = useNavigate();
 
   const handleComplete = useCallback(() => {
@@ -46,7 +56,7 @@ function Loading({
         : DEFAULT_DURATION;
     const start = performance.now();
 
-    const updateProgress = currentTime => {
+    const updateProgress = (currentTime: number) => {
       try {
         const elapsed = currentTime - start;
         const newProgress = Math.min(
@@ -78,6 +88,10 @@ function Loading({
 
   const progressPercentage = Math.round(progress);
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.style.display = "none";
+  };
+
   return (
     <div className="loading" role="main" aria-label="애플리케이션 로딩 중">
       <div className="loading__content">
@@ -86,9 +100,7 @@ function Loading({
             src={textImage}
             alt={`${title} 로고 텍스트`}
             className="loading__text-image"
-            onError={e => {
-              e.target.style.display = "none";
-            }}
+            onError={handleImageError}
           />
         )}
 
@@ -97,9 +109,7 @@ function Loading({
             src={logoImage}
             alt={`${title} 로고`}
             className="loading__logo-image"
-            onError={e => {
-              e.target.style.display = "none";
-            }}
+            onError={handleImageError}
           />
         )}
 
@@ -115,8 +125,8 @@ function Loading({
           className="loading__progress"
           role="progressbar"
           aria-valuenow={progressPercentage}
-          aria-valuemin="0"
-          aria-valuemax="100"
+          aria-valuemin={0}
+          aria-valuemax={100}
           aria-label={`로딩 진행률: ${progressPercentage}%`}
         >
           <div
@@ -135,16 +145,5 @@ function Loading({
     </div>
   );
 }
-
-Loading.propTypes = {
-  duration: PropTypes.number,
-  onComplete: PropTypes.func,
-  redirectTo: PropTypes.string,
-  title: PropTypes.string,
-  subtitle: PropTypes.string,
-  ctaText: PropTypes.string,
-  textImage: PropTypes.string,
-  logoImage: PropTypes.string,
-};
 
 export default Loading;

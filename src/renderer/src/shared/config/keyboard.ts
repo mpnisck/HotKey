@@ -1,4 +1,4 @@
-export const macBookProKeyboardLayout = [
+export const macBookProKeyboardLayout: string[][] = [
   [
     "Esc",
     "F1",
@@ -22,7 +22,7 @@ export const macBookProKeyboardLayout = [
   ["Fn", "Control", "Alt", "Meta", "Spaces", "Meta", "Alt", "←", "↑", "↓", "→"],
 ];
 
-export const specialKeys = new Set([
+export const specialKeys = new Set<string>([
   "ESC",
   "TAB",
   "CAPS LOCK",
@@ -42,14 +42,19 @@ export const specialKeys = new Set([
   "한/A",
 ]);
 
-export const modifierKeys = {
+export interface ModifierKeyConfig {
+  setter: string;
+  checker: string;
+}
+
+export const modifierKeys: Record<string, ModifierKeyConfig> = {
   meta: { setter: "setIsCommandPressed", checker: "metaKey" },
   alt: { setter: "setIsOptionPressed", checker: "altKey" },
   ctrl: { setter: "setIsControlPressed", checker: "ctrlKey" },
   shift: { setter: "setIsShiftPressed", checker: "shiftKey" },
 };
 
-export const specialKeyWidths = {
+export const specialKeyWidths: Record<string, string> = {
   Esc: "w-16",
   Tab: "w-18",
   "한/A": "w-22",

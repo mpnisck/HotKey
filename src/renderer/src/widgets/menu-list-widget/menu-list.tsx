@@ -1,6 +1,12 @@
-import PropTypes from "prop-types";
+import React from "react";
+import { MenuData } from "../../shared/types";
 
-function MenuList({ menuData, isKeyActive }) {
+interface MenuListProps {
+  menuData: MenuData;
+  isKeyActive: boolean;
+}
+
+function MenuList({ menuData, isKeyActive }: MenuListProps): React.JSX.Element {
   return (
     <div className="flex-1 overflow-y-auto p-4">
       {Object.entries(menuData).map(([category, items]) => (
@@ -28,10 +34,5 @@ function MenuList({ menuData, isKeyActive }) {
     </div>
   );
 }
-
-MenuList.propTypes = {
-  menuData: PropTypes.object.isRequired,
-  isKeyActive: PropTypes.bool.isRequired,
-};
 
 export default MenuList;

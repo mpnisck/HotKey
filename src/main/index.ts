@@ -2,12 +2,18 @@ import { app, shell, BrowserWindow, ipcMain, globalShortcut } from "electron";
 import { join } from "path";
 import { exec } from "child_process";
 
-let mainWindow;
-function isValidMenuItem(name) {
+interface MenuItem {
+  name: string;
+  shortcut: string;
+}
+
+let mainWindow: BrowserWindow | null = null;
+
+function isValidMenuItem(name: string): boolean {
   return name !== "" && !name.includes("비활성화된");
 }
 
-function getActiveApp() {
+function getActiveApp(): Promise<string> {
   return new Promise((resolve, reject) => {
     const activeAppScript = `
       tell application "System Events"
@@ -39,7 +45,7 @@ function getActiveApp() {
   });
 }
 
-function getMacMenuBarInfo(processName) {
+function getMacMenuBarInfo(processName: string): Promise<MenuItem[]> {
   return new Promise((resolve, reject) => {
     const safeProcessName = String(processName || "").replace(/"/g, '\\"');
     const appleScript = `
@@ -130,7 +136,7 @@ end tell
       `osascript -e "${appleScript.replace(/"/g, '\\"')}"`,
       (error, stdout, stderr) => {
         if (error || stderr) {
-          reject(new Error(error || stderr));
+          reject(new Error(error?.message || stderr));
           return;
         }
 
@@ -138,16 +144,14 @@ end tell
           const menuItems = parseMenuItems(stdout);
           resolve(menuItems);
         } catch (parseError) {
-          reject(
-            new Error(`메뉴 항목 파싱 중 오류 발생: ${parseError.message}`)
-          );
+          reject(new Error(`메뉴 항목 파싱 중 오류 발생: ${parseError}`));
         }
       }
     );
   });
 }
 
-function processShortcut(shortcut) {
+function processShortcut(shortcut: string): string {
   let processedShortcut = shortcut;
 
   if (processedShortcut.includes("⌃")) {
@@ -165,10 +169,10 @@ function processShortcut(shortcut) {
   return processedShortcut;
 }
 
-function parseMenuItems(stdout) {
+function parseMenuItems(stdout: string): MenuItem[] {
   try {
     const items = stdout.trim().split(",");
-    const menuItems = [];
+    const menuItems: MenuItem[] = [];
 
     for (let i = 0; i < items.length; i++) {
       if (items[i] && items[i + 1]) {
@@ -199,8 +203,8 @@ function parseMenuItems(stdout) {
   }
 }
 
-function setupIpcHandlers() {
-  ipcMain.handle("get-menu-info", async (_event, appName) => {
+function setupIpcHandlers(): void {
+  ipcMain.handle("get-menu-info", async (_event, appName?: string) => {
     try {
       const activeApp = appName || (await getActiveApp());
       if (!activeApp) {
@@ -227,36 +231,36 @@ function setupIpcHandlers() {
   });
 }
 
-function fadeInWindow(mainWindow) {
+function fadeInWindow(window: BrowserWindow): void {
   let opacity = 0;
-  mainWindow.setOpacity(opacity);
+  window.setOpacity(opacity);
 
   const interval = setInterval(() => {
     if (opacity >= 1) {
       clearInterval(interval);
     } else {
       opacity += 0.05;
-      mainWindow.setOpacity(opacity);
+      window.setOpacity(opacity);
     }
   }, 10);
 }
 
-function fadeOutWindow(mainWindow) {
+function fadeOutWindow(window: BrowserWindow): void {
   let opacity = 1;
-  mainWindow.setOpacity(opacity);
+  window.setOpacity(opacity);
 
   const interval = setInterval(() => {
     if (opacity <= 0) {
       clearInterval(interval);
-      mainWindow.hide();
+      window.hide();
     } else {
       opacity -= 0.05;
-      mainWindow.setOpacity(opacity);
+      window.setOpacity(opacity);
     }
   }, 10);
 }
 
-function createWindow() {
+function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 500,
     height: 700,
@@ -273,8 +277,10 @@ function createWindow() {
   });
 
   mainWindow.once("ready-to-show", () => {
-    mainWindow.show();
-    fadeInWindow(mainWindow);
+    if (mainWindow) {
+      mainWindow.show();
+      fadeInWindow(mainWindow);
+    }
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -289,7 +295,7 @@ function createWindow() {
   }
 }
 
-function toggleWindow() {
+function toggleWindow(): void {
   if (!mainWindow) {
     createWindow();
   } else {
@@ -303,13 +309,13 @@ function toggleWindow() {
   }
 }
 
-function setupGlobalShortcut() {
+function setupGlobalShortcut(): void {
   globalShortcut.register("Command+1", toggleWindow);
   globalShortcut.register("Option+1", toggleWindow);
   globalShortcut.register("Shift+1", toggleWindow);
 }
 
-const openSecuritySet = () => {
+const openSecuritySet = (): void => {
   shell.openExternal(
     "x-apple.systempreferences:com.apple.preference.security?Privacy"
   );

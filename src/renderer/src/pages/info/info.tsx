@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import textImgUrl from "../../shared/assets/HotKey.png";
-import logoImgUrl from "../../shared/assets/hotkey_icon.png";
-import accessImgUrl from "../../shared/assets/UniversalAccess-Icon.png";
+import textImgUrl from "../../shared/assets/hotkey-text.png";
+import logoImgUrl from "../../shared/assets/hotkey-icon.png";
+import accessImgUrl from "../../shared/assets/universal-access-icon.png";
 
-function Info() {
+function Info(): React.JSX.Element {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeApp, setActiveApp] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [activeApp, setActiveApp] = useState<string>("");
 
   useEffect(() => {
     const storedActiveApp = localStorage.getItem("activeApp");
@@ -16,7 +16,7 @@ function Info() {
     }
   }, []);
 
-  const fetchActiveApp = async () => {
+  const fetchActiveApp = async (): Promise<string | null> => {
     try {
       const activeApp = await window.api.invoke("get-active-app");
       return activeApp || "활성화된 앱 정보를 찾을 수 없습니다.";
@@ -26,7 +26,7 @@ function Info() {
     }
   };
 
-  const handleStart = async () => {
+  const handleStart = async (): Promise<void> => {
     setIsLoading(true);
     try {
       const currentApp = await fetchActiveApp();
@@ -68,10 +68,7 @@ function Info() {
             이 앱은 활성화된 메뉴바의 단축키 정보를 가져오고 있어요
             <br />
             손쉬운 사용 허용 후{" "}
-            <span
-              className="inline mr-1.5 px-4 py-1 text-sm
-             text-[#fff] bg-[#000] rounded-full"
-            >
+            <span className="inline mr-1.5 px-4 py-1 text-sm text-[#fff] bg-[#000] rounded-full">
               사용 시작
             </span>
             버튼을 누르고

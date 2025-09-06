@@ -1,21 +1,40 @@
 import { useEffect } from "react";
-import { useHotkeyStore } from "../../entities/hotkey";
+import { useHotkeyStore } from "../../entities/hot-key";
 import { processMenuItems } from "../../shared/lib/keyboard";
+import { MenuData } from "../../shared/types";
 
-export const useAppDetection = () => {
+interface UseAppDetectionReturn {
+  fetchMenuItems: (currentApp: string) => Promise<void>;
+  fetchActiveApp: () => Promise<string | null>;
+  menuData: MenuData;
+  error: string;
+  isLoading: boolean;
+  activeApp: string;
+}
+
+declare global {
+  interface Window {
+    api: {
+      invoke: (channel: string, ...args: any[]) => Promise<any>;
+    };
+  }
+}
+
+export const useAppDetection = (): UseAppDetectionReturn => {
   const store = useHotkeyStore();
 
-  const clearMenuData = () => {
+  const clearMenuData = (): void => {
     store.setMenuData({});
     localStorage.removeItem("menuData");
   };
 
-  const fetchMenuItems = async currentApp => {
+  const fetchMenuItems = async (currentApp: string): Promise<void> => {
     const storedMenuData = localStorage.getItem("menuData");
 
     if (storedMenuData) {
       try {
-        const parsedMenuData = JSON.parse(storedMenuData);
+        const parsedMenuData = JSON.parse(storedMenuData) as MenuData;
+
         if (Object.keys(parsedMenuData).length > 0) {
           store.setMenuData(parsedMenuData);
           store.setError("");
@@ -41,7 +60,7 @@ export const useAppDetection = () => {
         store.setError("메뉴 항목이 없습니다.");
         clearMenuData();
       }
-    } catch (error) {
+    } catch {
       store.setError(
         "시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용에서 앱 허용을 해 주세요"
       );
@@ -51,7 +70,7 @@ export const useAppDetection = () => {
     }
   };
 
-  const fetchActiveApp = async () => {
+  const fetchActiveApp = async (): Promise<string | null> => {
     const storedActiveApp = localStorage.getItem("activeApp");
 
     if (storedActiveApp) {
@@ -70,14 +89,14 @@ export const useAppDetection = () => {
         store.setActiveApp("활성화된 앱 정보를 찾을 수 없습니다.");
         return null;
       }
-    } catch (error) {
+    } catch {
       store.setError("활성화된 앱을 가져오는 중에 오류가 발생했습니다.");
       return null;
     }
   };
 
   useEffect(() => {
-    const loadInitialData = async () => {
+    const loadInitialData = async (): Promise<void> => {
       const storedActiveApp = localStorage.getItem("activeApp");
       const storedMenuData = localStorage.getItem("menuData");
 
@@ -86,7 +105,7 @@ export const useAppDetection = () => {
 
         if (storedMenuData) {
           try {
-            const parsedMenuData = JSON.parse(storedMenuData);
+            const parsedMenuData = JSON.parse(storedMenuData) as MenuData;
             store.setMenuData(parsedMenuData);
           } catch (error) {
             console.error("초기 메뉴 데이터 파싱 오류:", error);

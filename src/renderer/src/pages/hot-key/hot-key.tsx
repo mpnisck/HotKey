@@ -1,10 +1,17 @@
-import { useHotkeyStore } from "../../entities/hotkey";
+import React from "react";
+import { useHotkeyStore } from "../../entities/hot-key";
 import { useKeyTracking } from "../../features/key-tracking/use-key-tracking";
 import { useAppDetection } from "../../features/app-detection/use-app-detection";
-import Keyboard from "../../widgets/keyboard/Keyboard";
-import MenuList from "../../widgets/menu-list/MenuList";
+import Keyboard from "../../widgets/keyboard-widget/keyboard";
+import MenuList from "../../widgets/menu-list-widget/menu-list";
+import { MenuData } from "../../shared/types";
 
-function Hotkey() {
+interface MenuItem {
+  shortcut?: string;
+  [key: string]: any;
+}
+
+function Hotkey(): React.JSX.Element {
   const { showMenuData } = useHotkeyStore();
   const {
     keyboardKeys,
@@ -18,9 +25,9 @@ function Hotkey() {
 
   const { menuData, error, isLoading } = useAppDetection();
 
-  const filteredMenuData = isKeyActive
-    ? Object.entries(menuData).reduce((acc, [category, items]) => {
-        const filteredItems = items.filter(item => {
+  const filteredMenuData: MenuData = isKeyActive
+    ? Object.entries(menuData).reduce((acc: MenuData, [category, items]) => {
+        const filteredItems = items.filter((item: MenuItem) => {
           const shortcut = item.shortcut || "";
 
           const matchConditions = [
