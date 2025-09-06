@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import textImgUrl from "../../shared/assets/hotkey-text.png";
 import logoImgUrl from "../../shared/assets/hotkey-icon.png";
@@ -7,14 +7,6 @@ import accessImgUrl from "../../shared/assets/universal-access-icon.png";
 function Info(): React.JSX.Element {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activeApp, setActiveApp] = useState<string>("");
-
-  useEffect(() => {
-    const storedActiveApp = localStorage.getItem("activeApp");
-    if (storedActiveApp) {
-      setActiveApp(storedActiveApp);
-    }
-  }, []);
 
   const fetchActiveApp = async (): Promise<string | null> => {
     try {
@@ -31,7 +23,6 @@ function Info(): React.JSX.Element {
     try {
       const currentApp = await fetchActiveApp();
       if (currentApp) {
-        setActiveApp(currentApp);
         localStorage.setItem("activeApp", currentApp);
       }
       navigate("/hotkey", {
@@ -130,10 +121,6 @@ function Info(): React.JSX.Element {
         >
           {isLoading ? "로딩 중..." : "사용 시작"}
         </button>
-
-        {activeApp && (
-          <div className="mt-4 text-center text-lg text-[#333]"></div>
-        )}
       </div>
     </div>
   );

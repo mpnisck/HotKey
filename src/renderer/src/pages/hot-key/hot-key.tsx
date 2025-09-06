@@ -4,12 +4,7 @@ import { useKeyTracking } from "../../features/key-tracking/use-key-tracking";
 import { useAppDetection } from "../../features/app-detection/use-app-detection";
 import Keyboard from "../../widgets/keyboard-widget/keyboard";
 import MenuList from "../../widgets/menu-list-widget/menu-list";
-import { MenuData } from "../../shared/types";
-
-interface MenuItem {
-  shortcut?: string;
-  [key: string]: any;
-}
+import { MenuData, MenuItem } from "../../shared/types";
 
 function Hotkey(): React.JSX.Element {
   const { showMenuData } = useHotkeyStore();

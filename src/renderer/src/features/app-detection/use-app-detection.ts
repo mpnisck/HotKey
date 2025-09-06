@@ -12,14 +12,6 @@ interface UseAppDetectionReturn {
   activeApp: string;
 }
 
-declare global {
-  interface Window {
-    api: {
-      invoke: (channel: string, ...args: any[]) => Promise<any>;
-    };
-  }
-}
-
 export const useAppDetection = (): UseAppDetectionReturn => {
   const store = useHotkeyStore();
 
