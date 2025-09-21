@@ -60,63 +60,74 @@ tell application "System Events"
                 set subItemName to name of subItem
                 set subItemShortcut to ""
 
+                -- 모든 단축키 정보를 조합하여 가져오기
+                set shortcutModifiers to ""
+                set commandChar to ""
+
+                -- 먼저 AXMenuItemCmdKey 확인 (전체 단축키)
                 if exists (attribute "AXMenuItemCmdKey" of subItem) then
-                    set subItemShortcut to value of attribute "AXMenuItemCmdKey" of subItem
+                    set fullKey to value of attribute "AXMenuItemCmdKey" of subItem
+                    if fullKey is not missing value and fullKey is not "" then
+                        set subItemShortcut to fullKey
+                    end if
                 end if
 
+                -- AXMenuItemCmdKey가 없거나 비어있으면 개별 구성요소로 조합
                 if subItemShortcut is "" then
-                    set shortcutModifiers to ""
-
                     if exists (attribute "AXMenuItemCmdModifiers" of subItem) then
                         set modValue to value of attribute "AXMenuItemCmdModifiers" of subItem
                         if modValue is not missing value then
                             set modNum to modValue as number
 
-                            if (modNum div 1 mod 2 is 1) then
+                            -- 디버깅: 원본 값과 각 비트 상태 표시
+                            set shortcutModifiers to "[" & (modNum as string) & ":"
+
+                            -- Carbon/Cocoa EventModifiers 정확한 매핑 테스트
+                            -- 다양한 비트 위치 확인
+                            set bitResults to ""
+
+                            -- 비트 0-15 확인
+                            repeat with bitPos from 0 to 15
+                                set bitValue to (modNum div (2 ^ bitPos)) mod 2
+                                if bitValue = 1 then
+                                    set bitResults to bitResults & bitPos & ","
+                                end if
+                            end repeat
+
+                            set shortcutModifiers to shortcutModifiers & bitResults & "]"
+
+                            -- 알려진 Carbon modifier 값들로 매핑
+                            -- cmdKey = 256 (bit 8) = ⌘
+                            -- shiftKey = 512 (bit 9) = ⇧
+                            -- optionKey = 2048 (bit 11) = ⌥
+                            -- controlKey = 4096 (bit 12) = ⌃
+
+                            if ((modNum div 256) mod 2) = 1 then
                                 set shortcutModifiers to shortcutModifiers & "⌘"
                             end if
-                            if (modNum div 2 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "⌥"
-                            end if
-                            if (modNum div 4 mod 2 is 1) then
+
+                            if ((modNum div 512) mod 2) = 1 then
                                 set shortcutModifiers to shortcutModifiers & "⇧"
                             end if
-                            if (modNum div 8 mod 2 is 1) then
+
+                            if ((modNum div 2048) mod 2) = 1 then
+                                set shortcutModifiers to shortcutModifiers & "⌥"
+                            end if
+
+                            if ((modNum div 4096) mod 2) = 1 then
                                 set shortcutModifiers to shortcutModifiers & "⌃"
                             end if
-                            if (modNum div 32 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "Fn"
-                            end if
-                            if (modNum div 64 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "⌫"
-                            end if
-                            if (modNum div 128 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "⇥"
-                            end if
-                            if (modNum div 256 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "⎋"
-                            end if
-                            if (modNum div 8192 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "←"
-                            end if
-                            if (modNum div 16384 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "→"
-                            end if
-                            if (modNum div 32768 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "↑"
-                            end if
-                            if (modNum div 65536 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "↓"
-                            end if
-                            if (modNum div 2097152 mod 2 is 1) then
-                                set shortcutModifiers to shortcutModifiers & "⏎"
+
+                            -- Function key 확인 (다양한 위치 테스트)
+                            if ((modNum div 8192) mod 2) = 1 then
+                                set shortcutModifiers to "fn" & shortcutModifiers
                             end if
                         end if
                     end if
 
                     if exists (attribute "AXMenuItemCmdChar" of subItem) then
                         set commandChar to value of attribute "AXMenuItemCmdChar" of subItem
-                        if commandChar is not missing value then
+                        if commandChar is not missing value and commandChar is not "" then
                             set subItemShortcut to shortcutModifiers & commandChar
                         end if
                     end if
@@ -152,21 +163,7 @@ end tell
 }
 
 function processShortcut(shortcut: string): string {
-  let processedShortcut = shortcut;
-
-  if (processedShortcut.includes("⌃")) {
-    processedShortcut = processedShortcut.replace("⌃", "").trim();
-  }
-
-  if (processedShortcut.includes(" ")) {
-    processedShortcut = processedShortcut.replace(" ", "⌘").trim();
-  }
-
-  if (processedShortcut.length === 1 && /[a-zA-Z]/.test(processedShortcut)) {
-    processedShortcut = "⌘" + processedShortcut;
-  }
-
-  return processedShortcut;
+  return shortcut.trim();
 }
 
 function parseMenuItems(stdout: string): MenuItem[] {
