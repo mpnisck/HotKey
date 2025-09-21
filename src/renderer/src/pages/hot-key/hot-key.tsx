@@ -53,10 +53,10 @@ function Hotkey(): React.JSX.Element {
             },
           ];
 
-          const activeModifiers = matchConditions.filter(mod => mod.pressed);
+          const activeModifiers = matchConditions.filter((mod) => mod.pressed);
           return (
             activeModifiers.length > 0 &&
-            activeModifiers.every(mod => mod.condition)
+            activeModifiers.every((mod) => mod.condition)
           );
         });
 

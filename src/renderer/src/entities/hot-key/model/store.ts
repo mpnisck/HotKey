@@ -33,7 +33,7 @@ interface HotkeyActions {
 
 type HotkeyStore = HotkeyState & HotkeyActions;
 
-const useHotkeyStore = create<HotkeyStore>(set => ({
+const useHotkeyStore = create<HotkeyStore>((set) => ({
   menuData: {},
   activeApp: "Figma",
   error: "",
@@ -59,14 +59,14 @@ const useHotkeyStore = create<HotkeyStore>(set => ({
   setIsKeyActive: (active: boolean) => set({ isKeyActive: active }),
 
   addKeyboardKey: (key: string) =>
-    set(state => {
+    set((state) => {
       const upperKey = key.toUpperCase();
       if (state.keyboardKeys.has(upperKey)) return state;
       return { keyboardKeys: new Set(state.keyboardKeys).add(upperKey) };
     }),
 
   removeKeyboardKey: (key: string) =>
-    set(state => {
+    set((state) => {
       const upperKey = key.toUpperCase();
       if (!state.keyboardKeys.has(upperKey)) return state;
       const newKeys = new Set(state.keyboardKeys);
