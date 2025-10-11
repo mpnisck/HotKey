@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import textImgUrl from "../../shared/assets/hotkey-text.png";
@@ -29,25 +29,9 @@ function Loading({
   logoImage = logoImgUrl,
 }: LoadingProps): React.JSX.Element {
   const [progress, setProgress] = useState<number>(0);
-  const [isComplete, setIsComplete] = useState<boolean>(false);
   const animationFrameId = useRef<number>(0);
+  const hasCompletedRef = useRef<boolean>(false);
   const navigate = useNavigate();
-
-  const handleComplete = useCallback(() => {
-    setIsComplete(true);
-    try {
-      if (onComplete) {
-        onComplete();
-      } else if (redirectTo) {
-        navigate(redirectTo);
-      }
-    } catch (error) {
-      console.error("Loading completion error:", error);
-      if (redirectTo && redirectTo !== window.location.pathname) {
-        navigate(redirectTo);
-      }
-    }
-  }, [onComplete, redirectTo, navigate]);
 
   useEffect(() => {
     const validDuration =
@@ -55,6 +39,24 @@ function Loading({
         ? duration
         : DEFAULT_DURATION;
     const start = performance.now();
+
+    const handleComplete = () => {
+      if (hasCompletedRef.current) return;
+      hasCompletedRef.current = true;
+
+      try {
+        if (onComplete) {
+          onComplete();
+        } else if (redirectTo) {
+          navigate(redirectTo);
+        }
+      } catch (error) {
+        console.error("Loading completion error:", error);
+        if (redirectTo && redirectTo !== window.location.pathname) {
+          navigate(redirectTo);
+        }
+      }
+    };
 
     const updateProgress = (currentTime: number) => {
       try {
@@ -66,9 +68,9 @@ function Loading({
 
         setProgress(newProgress);
 
-        if (newProgress < MAX_PROGRESS && !isComplete) {
+        if (newProgress < MAX_PROGRESS && !hasCompletedRef.current) {
           animationFrameId.current = requestAnimationFrame(updateProgress);
-        } else if (!isComplete) {
+        } else if (!hasCompletedRef.current) {
           handleComplete();
         }
       } catch (error) {
@@ -84,7 +86,7 @@ function Loading({
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [duration, handleComplete, isComplete]);
+  }, [duration, onComplete, redirectTo, navigate]);
 
   const progressPercentage = Math.round(progress);
 
