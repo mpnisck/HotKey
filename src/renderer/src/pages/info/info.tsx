@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import textImgUrl from "../../shared/assets/hotkey-text.png";
 import logoImgUrl from "../../shared/assets/hotkey-icon.png";
 import accessImgUrl from "../../shared/assets/universal-access-icon.png";
+import { electronApi } from "../../shared/api";
+import { STORAGE_KEYS, ERROR_MESSAGES } from "../../shared/config/storage";
 
 function Info(): React.JSX.Element {
   const navigate = useNavigate();
@@ -10,10 +12,10 @@ function Info(): React.JSX.Element {
 
   const fetchActiveApp = async (): Promise<string | null> => {
     try {
-      const activeApp = await window.api.invoke("get-active-app");
-      return activeApp || "활성화된 앱 정보를 찾을 수 없습니다.";
+      const activeApp = await electronApi.getActiveApp();
+      return activeApp || ERROR_MESSAGES.NO_APP;
     } catch (error) {
-      console.error("활성화된 앱을 가져오는 중 오류가 발생했습니다.", error);
+      console.error(ERROR_MESSAGES.FETCH_ERROR, error);
       return null;
     }
   };
@@ -23,7 +25,7 @@ function Info(): React.JSX.Element {
     try {
       const currentApp = await fetchActiveApp();
       if (currentApp) {
-        localStorage.setItem("activeApp", currentApp);
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_APP, currentApp);
       }
       navigate("/hotkey", {
         state: {

@@ -1,7 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useHotkeyStore } from "../../entities/hot-key";
 import { processMenuItems } from "../../shared/lib/keyboard";
 import { MenuData } from "../../shared/types";
+import { electronApi } from "../../shared/api";
+import { STORAGE_KEYS, ERROR_MESSAGES } from "../../shared/config/storage";
 
 interface UseAppDetectionReturn {
   fetchMenuItems: (currentApp: string) => Promise<void>;
@@ -15,55 +17,60 @@ interface UseAppDetectionReturn {
 export const useAppDetection = (): UseAppDetectionReturn => {
   const store = useHotkeyStore();
 
-  const clearMenuData = (): void => {
+  const clearMenuData = useCallback((): void => {
     store.setMenuData({});
-    localStorage.removeItem("menuData");
-  };
+    localStorage.removeItem(STORAGE_KEYS.MENU_DATA);
+  }, []);
 
-  const fetchMenuItems = async (currentApp: string): Promise<void> => {
-    const storedMenuData = localStorage.getItem("menuData");
+  const fetchMenuItems = useCallback(
+    async (currentApp: string): Promise<void> => {
+      const storedMenuData = localStorage.getItem(STORAGE_KEYS.MENU_DATA);
 
-    if (storedMenuData) {
+      if (storedMenuData) {
+        try {
+          const parsedMenuData = JSON.parse(storedMenuData) as MenuData;
+
+          if (Object.keys(parsedMenuData).length > 0) {
+            store.setMenuData(parsedMenuData);
+            store.setError("");
+            return;
+          }
+        } catch (error) {
+          console.error("로컬 스토리지 데이터 파싱 중 오류:", error);
+        }
+      }
+
+      if (!currentApp) return;
+
       try {
-        const parsedMenuData = JSON.parse(storedMenuData) as MenuData;
+        store.setIsLoading(true);
+        const menuItems = await electronApi.getMenuInfo(currentApp);
 
-        if (Object.keys(parsedMenuData).length > 0) {
-          store.setMenuData(parsedMenuData);
+        if (Array.isArray(menuItems) && menuItems.length > 0) {
+          const groupedItems = processMenuItems(menuItems);
+          store.setMenuData(groupedItems);
+          localStorage.setItem(
+            STORAGE_KEYS.MENU_DATA,
+            JSON.stringify(groupedItems)
+          );
           store.setError("");
-          return;
+        } else {
+          store.setError(ERROR_MESSAGES.NO_MENU);
+          clearMenuData();
         }
       } catch (error) {
-        console.error("로컬 스토리지 데이터 파싱 중 오류:", error);
-      }
-    }
-
-    if (!currentApp) return;
-
-    try {
-      store.setIsLoading(true);
-      const menuItems = await window.api.invoke("get-menu-info", currentApp);
-
-      if (Array.isArray(menuItems) && menuItems.length > 0) {
-        const groupedItems = processMenuItems(menuItems);
-        store.setMenuData(groupedItems);
-        localStorage.setItem("menuData", JSON.stringify(groupedItems));
-        store.setError("");
-      } else {
-        store.setError("메뉴 항목이 없습니다.");
+        console.error("메뉴 정보 가져오기 오류:", error);
+        store.setError(ERROR_MESSAGES.PERMISSION);
         clearMenuData();
+      } finally {
+        store.setIsLoading(false);
       }
-    } catch {
-      store.setError(
-        "시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용에서 앱 허용을 해 주세요"
-      );
-      clearMenuData();
-    } finally {
-      store.setIsLoading(false);
-    }
-  };
+    },
+    [clearMenuData]
+  );
 
-  const fetchActiveApp = async (): Promise<string | null> => {
-    const storedActiveApp = localStorage.getItem("activeApp");
+  const fetchActiveApp = useCallback(async (): Promise<string | null> => {
+    const storedActiveApp = localStorage.getItem(STORAGE_KEYS.ACTIVE_APP);
 
     if (storedActiveApp) {
       store.setActiveApp(storedActiveApp);
@@ -71,26 +78,27 @@ export const useAppDetection = (): UseAppDetectionReturn => {
     }
 
     try {
-      const activeApp = await window.api.invoke("get-active-app");
+      const activeApp = await electronApi.getActiveApp();
 
       if (activeApp) {
         store.setActiveApp(activeApp);
-        localStorage.setItem("activeApp", activeApp);
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_APP, activeApp);
         return activeApp;
       } else {
-        store.setActiveApp("활성화된 앱 정보를 찾을 수 없습니다.");
+        store.setActiveApp(ERROR_MESSAGES.NO_APP);
         return null;
       }
-    } catch {
-      store.setError("활성화된 앱을 가져오는 중에 오류가 발생했습니다.");
+    } catch (error) {
+      console.error("활성 앱 가져오기 오류:", error);
+      store.setError(ERROR_MESSAGES.FETCH_ERROR);
       return null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     const loadInitialData = async (): Promise<void> => {
-      const storedActiveApp = localStorage.getItem("activeApp");
-      const storedMenuData = localStorage.getItem("menuData");
+      const storedActiveApp = localStorage.getItem(STORAGE_KEYS.ACTIVE_APP);
+      const storedMenuData = localStorage.getItem(STORAGE_KEYS.MENU_DATA);
 
       if (storedActiveApp) {
         store.setActiveApp(storedActiveApp);
@@ -112,7 +120,7 @@ export const useAppDetection = (): UseAppDetectionReturn => {
     };
 
     loadInitialData();
-  }, []);
+  }, [fetchMenuItems, fetchActiveApp]);
 
   return {
     fetchMenuItems,
