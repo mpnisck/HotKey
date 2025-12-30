@@ -68,9 +68,9 @@ tell application "System Events"
                   set modVal to value of attribute "AXMenuItemCmdModifiers" of mi
                   if modVal is not missing value then
                     set m to modVal as number
-                    if m mod 2 = 1 then set mods to mods & "⇧"
-                    if (m div 2) mod 2 = 1 then set mods to mods & "⌥"
                     if (m div 4) mod 2 = 1 then set mods to mods & "⌃"
+                    if (m div 2) mod 2 = 1 then set mods to mods & "⌥"
+                    if m mod 2 = 1 then set mods to mods & "⇧"
                     if (m div 8) mod 2 = 0 then set mods to mods & "⌘"
                   end if
                   set sc to mods & cmdChar
