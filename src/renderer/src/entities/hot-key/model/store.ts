@@ -35,7 +35,7 @@ type HotkeyStore = HotkeyState & HotkeyActions;
 
 const useHotkeyStore = create<HotkeyStore>((set) => ({
   menuData: {},
-  activeApp: "Figma",
+  activeApp: "",
   error: "",
   isLoading: false,
   isCommandPressed: false,

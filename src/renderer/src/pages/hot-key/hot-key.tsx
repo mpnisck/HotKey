@@ -18,7 +18,7 @@ function Hotkey(): React.JSX.Element {
     isFnPressed,
   } = useKeyTracking();
 
-  const { menuData, error, isLoading } = useAppDetection();
+  const { menuData, error, isLoading, activeApp } = useAppDetection();
 
   const filteredMenuData: MenuData = isKeyActive
     ? Object.entries(menuData).reduce((acc: MenuData, [category, items]) => {
@@ -47,9 +47,9 @@ function Hotkey(): React.JSX.Element {
               condition: shortcut.includes("⇧"),
             },
             {
-              symbol: "Fn",
+              symbol: "🌐",
               pressed: isFnPressed,
-              condition: shortcut.includes("Fn"),
+              condition: shortcut.includes("🌐"),
             },
           ];
 
@@ -73,7 +73,7 @@ function Hotkey(): React.JSX.Element {
         <h1 className="text-lg font-semibold">단축키 정보</h1>
         <p className="text-[#666]">
           <span className="text-lg font-semibold bg-[#FE8E00] text-[#fff] py-2 px-5 rounded-full">
-            Figma
+            {activeApp}
           </span>
         </p>
       </div>

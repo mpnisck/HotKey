@@ -218,7 +218,7 @@ app.whenReady().then(() => {
 ```jsx
 const appleScript = `
 tell application "System Events"
-    tell process "Figma"
+    tell process ""
         set menuItems to {}
         set menuBarItems to menu bar items of menu bar 1
         repeat with menuItem in menuBarItems
