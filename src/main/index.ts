@@ -7,6 +7,32 @@ interface MenuItem {
   shortcut: string;
 }
 
+// macOS 특수 키 심볼 매핑 (charCode -> symbol)
+const specialKeySymbols = new Map<number, string>([
+  [0x09, "⇥"], // Tab
+  [0x08, "⌫"], // Backspace
+  [0x7f, "⌫"], // Delete
+  [0x1b, "⎋"], // Escape
+  [0x0d, "↩"], // Return/Enter
+  [0x1c, "←"], // Left arrow
+  [0x1d, "→"], // Right arrow
+  [0x1e, "↑"], // Up arrow
+  [0x1f, "↓"], // Down arrow
+]);
+
+// 단축키 문자열 정규화 함수
+function normalizeShortcut(shortcut: string): string {
+  let result = "";
+
+  for (const char of shortcut) {
+    const charCode = char.charCodeAt(0);
+    const symbol = specialKeySymbols.get(charCode);
+    result += symbol ?? char;
+  }
+
+  return result;
+}
+
 let mainWindow: BrowserWindow | null = null;
 
 function getActiveApp(): Promise<string> {
@@ -73,7 +99,28 @@ tell application "System Events"
                     if m mod 2 = 1 then set mods to mods & "⇧"
                     if (m div 8) mod 2 = 0 then set mods to mods & "⌘"
                   end if
-                  set sc to mods & cmdChar
+                  -- Check for glyph (Tab, Delete, etc.) based on Carbon Menu Manager constants
+                  set glyphChar to cmdChar
+                  try
+                    set glyphVal to value of attribute "AXMenuItemCmdGlyph" of mi
+                    if glyphVal is not missing value then
+                      if glyphVal = 2 then set glyphChar to "⇥"
+                      if glyphVal = 4 then set glyphChar to "⌤"
+                      if glyphVal = 9 then set glyphChar to "␣"
+                      if glyphVal = 10 then set glyphChar to "⌦"
+                      if glyphVal = 11 then set glyphChar to "↩"
+                      if glyphVal = 23 then set glyphChar to "⌫"
+                      if glyphVal = 27 then set glyphChar to "⎋"
+                      if glyphVal = 28 then set glyphChar to "⌧"
+                      if glyphVal = 98 then set glyphChar to "⇞"
+                      if glyphVal = 100 then set glyphChar to "←"
+                      if glyphVal = 101 then set glyphChar to "→"
+                      if glyphVal = 104 then set glyphChar to "↑"
+                      if glyphVal = 106 then set glyphChar to "↓"
+                      if glyphVal = 107 then set glyphChar to "⇟"
+                    end if
+                  end try
+                  set sc to mods & glyphChar
                 end if
               end try
             end if
@@ -99,9 +146,10 @@ end tell`;
         .filter(Boolean)
         .map((item) => {
           const parts = item.split("|");
+          const rawShortcut = parts[1]?.trim() || "";
           return {
             name: parts[0]?.trim() || "",
-            shortcut: parts[1]?.trim() || "",
+            shortcut: normalizeShortcut(rawShortcut),
           };
         })
         .filter((item) => item.name && item.shortcut);
