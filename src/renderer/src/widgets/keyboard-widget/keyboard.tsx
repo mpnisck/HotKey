@@ -2,8 +2,8 @@ import React from "react";
 import {
   macBookProKeyboardLayout,
   specialKeyWidths,
-} from "../../shared/config/keyboard";
-import { getKeyStyle } from "../../shared/lib/keyboard";
+} from "@/shared/config/keyboard";
+import { getKeyStyle } from "@/shared/lib/keyboard";
 
 interface KeyboardProps {
   keyboardKeys: Set<string>;

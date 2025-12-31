@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import textImgUrl from "../../shared/assets/hotkey-text.png";
-import logoImgUrl from "../../shared/assets/hotkey-icon.png";
+import textImgUrl from "@/shared/assets/hotkey-text.png";
+import logoImgUrl from "@/shared/assets/hotkey-icon.png";
 
 const DEFAULT_DURATION = 3000;
 const MAX_PROGRESS = 100;

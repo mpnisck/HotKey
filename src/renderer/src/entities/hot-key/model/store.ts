@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { MenuData } from "../../../shared/types";
+import { MenuData } from "@/shared/types";
 
 interface HotkeyState {
   menuData: MenuData;

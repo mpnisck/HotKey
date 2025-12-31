@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useHotkeyStore } from "../../entities/hot-key";
+import { useHotkeyStore } from "@/entities/hot-key";
 
 interface UseKeyTrackingReturn {
   keyboardKeys: Set<string>;

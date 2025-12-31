@@ -1,1 +1,1 @@
-export { electronApi } from "./electron";
+export { electronApi } from "@/shared/api/electron";

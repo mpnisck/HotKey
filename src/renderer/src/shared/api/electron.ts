@@ -1,4 +1,4 @@
-import { MenuItem } from "../types";
+import { MenuItem } from "@/shared/types";
 
 export const electronApi = {
   getMenuInfo: async (appName?: string): Promise<MenuItem[]> => {

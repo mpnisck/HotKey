@@ -1,5 +1,5 @@
-import { specialKeys } from "../config/keyboard";
-import { MenuItem } from "../types";
+import { specialKeys } from "@/shared/config/keyboard";
+import { MenuItem } from "@/shared/types";
 
 export interface ProcessedMenuItems {
   [category: string]: MenuItem[];

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import textImgUrl from "../../shared/assets/hotkey-text.png";
-import logoImgUrl from "../../shared/assets/hotkey-icon.png";
-import accessImgUrl from "../../shared/assets/universal-access-icon.png";
-import { electronApi } from "../../shared/api";
-import { STORAGE_KEYS, ERROR_MESSAGES } from "../../shared/config/storage";
+import textImgUrl from "@/shared/assets/hotkey-text.png";
+import logoImgUrl from "@/shared/assets/hotkey-icon.png";
+import accessImgUrl from "@/shared/assets/universal-access-icon.png";
+import { electronApi } from "@/shared/api";
+import { STORAGE_KEYS, ERROR_MESSAGES } from "@/shared/config/storage";
 
 function Info(): React.JSX.Element {
   const navigate = useNavigate();

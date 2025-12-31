@@ -1,5 +1,5 @@
 import React from "react";
-import { MenuData } from "../../shared/types";
+import { MenuData } from "@/shared/types";
 
 interface MenuListProps {
   menuData: MenuData;

@@ -1,10 +1,10 @@
 import React from "react";
-import { useHotkeyStore } from "../../entities/hot-key";
-import { useKeyTracking } from "../../features/key-tracking/use-key-tracking";
-import { useAppDetection } from "../../features/app-detection/use-app-detection";
-import Keyboard from "../../widgets/keyboard-widget/keyboard";
-import MenuList from "../../widgets/menu-list-widget/menu-list";
-import { MenuData, MenuItem } from "../../shared/types";
+import { useHotkeyStore } from "@/entities/hot-key";
+import { useKeyTracking } from "@/features/key-tracking/use-key-tracking";
+import { useAppDetection } from "@/features/app-detection/use-app-detection";
+import Keyboard from "@/widgets/keyboard-widget/keyboard";
+import MenuList from "@/widgets/menu-list-widget/menu-list";
+import { MenuData, MenuItem } from "@/shared/types";
 
 function Hotkey(): React.JSX.Element {
   const { showMenuData } = useHotkeyStore();

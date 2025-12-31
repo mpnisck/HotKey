@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { useHotkeyStore } from "../../entities/hot-key";
-import { processMenuItems } from "../../shared/lib/keyboard";
-import { MenuData } from "../../shared/types";
-import { electronApi } from "../../shared/api";
-import { STORAGE_KEYS, ERROR_MESSAGES } from "../../shared/config/storage";
+import { useHotkeyStore } from "@/entities/hot-key";
+import { processMenuItems } from "@/shared/lib/keyboard";
+import { MenuData } from "@/shared/types";
+import { electronApi } from "@/shared/api";
+import { STORAGE_KEYS, ERROR_MESSAGES } from "@/shared/config/storage";
 
 interface UseAppDetectionReturn {
   fetchMenuItems: (currentApp: string) => Promise<void>;

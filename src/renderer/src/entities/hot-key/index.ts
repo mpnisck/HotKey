@@ -1,1 +1,1 @@
-export { default as useHotkeyStore } from "./model/store";
+export { default as useHotkeyStore } from "@/entities/hot-key/model/store";
