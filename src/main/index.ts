@@ -7,20 +7,18 @@ interface MenuItem {
   shortcut: string;
 }
 
-// macOS 특수 키 심볼 매핑 (charCode -> symbol)
 const specialKeySymbols = new Map<number, string>([
-  [0x09, "⇥"], // Tab
-  [0x08, "⌫"], // Backspace
-  [0x7f, "⌫"], // Delete
-  [0x1b, "⎋"], // Escape
-  [0x0d, "↩"], // Return/Enter
-  [0x1c, "←"], // Left arrow
-  [0x1d, "→"], // Right arrow
-  [0x1e, "↑"], // Up arrow
-  [0x1f, "↓"], // Down arrow
+  [0x09, "⇥"],
+  [0x08, "⌫"],
+  [0x7f, "⌫"],
+  [0x1b, "⎋"],
+  [0x0d, "↩"],
+  [0x1c, "←"],
+  [0x1d, "→"],
+  [0x1e, "↑"],
+  [0x1f, "↓"],
 ]);
 
-// 단축키 문자열 정규화 함수
 function normalizeShortcut(shortcut: string): string {
   let result = "";
 
