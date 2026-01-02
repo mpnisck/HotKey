@@ -92,6 +92,17 @@ tell application "System Events"
                   set modVal to value of attribute "AXMenuItemCmdModifiers" of mi
                   if modVal is not missing value then
                     set m to modVal as number
+                    -- Check for fn key via AXMenuItemCmdVirtualKey (F1-F12 require fn)
+                    try
+                      set vkVal to value of attribute "AXMenuItemCmdVirtualKey" of mi
+                      if vkVal is not missing value then
+                        set vk to vkVal as number
+                        -- F1-F12 virtual keycodes: 122,120,99,118,96,97,98,100,101,109,103,111
+                        if vk = 122 or vk = 120 or vk = 99 or vk = 118 or vk = 96 or vk = 97 or vk = 98 or vk = 100 or vk = 101 or vk = 109 or vk = 103 or vk = 111 then
+                          set mods to mods & "🌐"
+                        end if
+                      end if
+                    end try
                     if (m div 4) mod 2 = 1 then set mods to mods & "⌃"
                     if (m div 2) mod 2 = 1 then set mods to mods & "⌥"
                     if m mod 2 = 1 then set mods to mods & "⇧"
