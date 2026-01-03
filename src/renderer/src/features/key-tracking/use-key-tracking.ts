@@ -15,10 +15,16 @@ export const useKeyTracking = (): UseKeyTrackingReturn => {
   const store = useHotkeyStore();
 
   useEffect(() => {
+    const pressedKeys = new Set<string>();
+
     const handleKeyDown = (event: KeyboardEvent): void => {
       const key = event.key.toUpperCase();
+      const code = event.code;
+
       event.preventDefault();
 
+      pressedKeys.add(key);
+      if (code) pressedKeys.add(code);
       store.addKeyboardKey(key);
 
       let isAnyModifierActive = false;
@@ -39,7 +45,18 @@ export const useKeyTracking = (): UseKeyTrackingReturn => {
         store.setIsShiftPressed(true);
         isAnyModifierActive = true;
       }
-      if (event.key.toLowerCase() === "fn") {
+
+      const isFnPressed =
+        event.key.toLowerCase() === "fn" ||
+        code === "Fn" ||
+        code === "Function";
+      const isGlobePressed =
+        event.key === "Globe" ||
+        event.key === "Lang1" ||
+        code === "Lang1" ||
+        code === "IntlBackslash";
+
+      if (isFnPressed || isGlobePressed) {
         store.setIsFnPressed(true);
         isAnyModifierActive = true;
       }
@@ -51,6 +68,10 @@ export const useKeyTracking = (): UseKeyTrackingReturn => {
 
     const handleKeyUp = (event: KeyboardEvent): void => {
       const key = event.key.toUpperCase();
+      const code = event.code;
+
+      pressedKeys.delete(key);
+      if (code) pressedKeys.delete(code);
       store.removeKeyboardKey(key);
 
       if (!event.metaKey) store.setIsCommandPressed(false);
@@ -58,8 +79,33 @@ export const useKeyTracking = (): UseKeyTrackingReturn => {
       if (!event.ctrlKey) store.setIsControlPressed(false);
       if (!event.shiftKey) store.setIsShiftPressed(false);
 
+      const isFnStillPressed =
+        pressedKeys.has("FN") ||
+        pressedKeys.has("Fn") ||
+        pressedKeys.has("Function") ||
+        event.key.toLowerCase() === "fn" ||
+        code === "Fn" ||
+        code === "Function";
+      const isGlobeStillPressed =
+        pressedKeys.has("GLOBE") ||
+        pressedKeys.has("Lang1") ||
+        pressedKeys.has("IntlBackslash") ||
+        event.key === "Globe" ||
+        event.key === "Lang1" ||
+        code === "Lang1" ||
+        code === "IntlBackslash";
+
+      if (!isFnStillPressed && !isGlobeStillPressed) {
+        store.setIsFnPressed(false);
+      }
+
       const hasActiveModifier =
-        event.metaKey || event.altKey || event.ctrlKey || event.shiftKey;
+        event.metaKey ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        isFnStillPressed ||
+        isGlobeStillPressed;
 
       if (!hasActiveModifier) {
         store.setIsKeyActive(false);

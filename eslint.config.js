@@ -1,0 +1,118 @@
+const js = require("@eslint/js");
+const react = require("eslint-plugin-react");
+const reactHooks = require("eslint-plugin-react-hooks");
+const reactRefresh = require("eslint-plugin-react-refresh");
+const tseslint = require("@typescript-eslint/eslint-plugin");
+const tsparser = require("@typescript-eslint/parser");
+
+module.exports = [
+  {
+    ignores: ["dist/**", "out/**", "node_modules/**", "build/**"],
+  },
+  {
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+      globals: {
+        window: "readonly",
+        document: "readonly",
+        console: "readonly",
+        process: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+        Buffer: "readonly",
+        global: "readonly",
+        module: "readonly",
+        require: "readonly",
+        exports: "readonly",
+        KeyboardEvent: "readonly",
+        Event: "readonly",
+        HTMLElement: "readonly",
+        Element: "readonly",
+        Node: "readonly",
+        Navigator: "readonly",
+        Location: "readonly",
+        History: "readonly",
+        localStorage: "readonly",
+        sessionStorage: "readonly",
+        fetch: "readonly",
+        setTimeout: "readonly",
+        setInterval: "readonly",
+        clearTimeout: "readonly",
+        clearInterval: "readonly",
+        URL: "readonly",
+        URLSearchParams: "readonly",
+        FormData: "readonly",
+        Blob: "readonly",
+        File: "readonly",
+        FileReader: "readonly",
+        Image: "readonly",
+        Audio: "readonly",
+        Video: "readonly",
+        WebSocket: "readonly",
+        XMLHttpRequest: "readonly",
+        AbortController: "readonly",
+        AbortSignal: "readonly",
+        Promise: "readonly",
+        Map: "readonly",
+        Set: "readonly",
+        WeakMap: "readonly",
+        WeakSet: "readonly",
+        Symbol: "readonly",
+        Proxy: "readonly",
+        Reflect: "readonly",
+        Intl: "readonly",
+        JSON: "readonly",
+        Math: "readonly",
+        Date: "readonly",
+        RegExp: "readonly",
+        Error: "readonly",
+        TypeError: "readonly",
+        RangeError: "readonly",
+        ReferenceError: "readonly",
+        SyntaxError: "readonly",
+        URIError: "readonly",
+        EvalError: "readonly",
+        AggregateError: "readonly",
+      },
+    },
+    plugins: {
+      react,
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+      "@typescript-eslint": tseslint,
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      ...react.configs["jsx-runtime"].rules,
+      ...reactHooks.configs.recommended.rules,
+      "react/react-in-jsx-scope": "off",
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true },
+      ],
+      "@typescript-eslint/no-unused-vars": "warn",
+    },
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+];
