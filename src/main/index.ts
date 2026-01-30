@@ -1,6 +1,22 @@
-import { app, shell, BrowserWindow, ipcMain, globalShortcut } from "electron";
+import {
+  app,
+  shell,
+  BrowserWindow,
+  ipcMain,
+  globalShortcut,
+  screen,
+} from "electron";
 import { join } from "path";
 import { exec } from "child_process";
+import { GlobalKeyboardListener } from "node-global-key-listener";
+
+let globalKeyListener: GlobalKeyboardListener | null = null;
+
+const LONG_PRESS_DURATION = 2000;
+let commandPressStart: number | null = null;
+let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+let progressInterval: ReturnType<typeof setInterval> | null = null;
+let capturedActiveApp: string | null = null;
 
 interface MenuItem {
   name: string;
@@ -49,8 +65,7 @@ function getActiveApp(): Promise<string> {
       `osascript -e "${activeAppScript.replace(/"/g, '\\"')}"`,
       (error, stdout) => {
         if (error) {
-          console.error("활성 앱 확인 오류:", error.message);
-          reject(new Error(`활성 앱 확인 오류: ${error.message}`));
+          reject(new Error(error.message));
           return;
         }
 
@@ -92,12 +107,10 @@ tell application "System Events"
                   set modVal to value of attribute "AXMenuItemCmdModifiers" of mi
                   if modVal is not missing value then
                     set m to modVal as number
-                    -- Check for fn key via AXMenuItemCmdVirtualKey (F1-F12 require fn)
                     try
                       set vkVal to value of attribute "AXMenuItemCmdVirtualKey" of mi
                       if vkVal is not missing value then
                         set vk to vkVal as number
-                        -- F1-F12 virtual keycodes: 122,120,99,118,96,97,98,100,101,109,103,111
                         if vk = 122 or vk = 120 or vk = 99 or vk = 118 or vk = 96 or vk = 97 or vk = 98 or vk = 100 or vk = 101 or vk = 109 or vk = 103 or vk = 111 then
                           set mods to mods & "🌐"
                         end if
@@ -108,7 +121,6 @@ tell application "System Events"
                     if m mod 2 = 1 then set mods to mods & "⇧"
                     if (m div 8) mod 2 = 0 then set mods to mods & "⌘"
                   end if
-                  -- Check for glyph (Tab, Delete, etc.) based on Carbon Menu Manager constants
                   set glyphChar to cmdChar
                   try
                     set glyphVal to value of attribute "AXMenuItemCmdGlyph" of mi
@@ -169,29 +181,12 @@ end tell`;
 
 function setupIpcHandlers(): void {
   ipcMain.handle("get-menu-info", async (_event, appName?: string) => {
-    try {
-      const activeApp = appName || (await getActiveApp());
-      if (!activeApp) {
-        throw new Error("활성 앱 이름이 제공되지 않았습니다.");
-      }
-      return await getMacMenuBarInfo(activeApp);
-    } catch (error) {
-      console.error("get-menu-info 오류:", error);
-      throw error;
-    }
+    const activeApp = appName || (await getActiveApp());
+    return await getMacMenuBarInfo(activeApp);
   });
 
   ipcMain.handle("get-active-app", async () => {
-    try {
-      const activeApp = await getActiveApp();
-      if (!activeApp) {
-        throw new Error("활성화된 앱을 찾을 수 없습니다.");
-      }
-      return activeApp;
-    } catch (error) {
-      console.error("get-active-app 오류:", error);
-      throw error;
-    }
+    return await getActiveApp();
   });
 }
 
@@ -227,7 +222,7 @@ function fadeOutWindow(window: BrowserWindow): void {
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 500,
-    height: 700,
+    height: 735,
     x: -0,
     y: -0,
     frame: true,
@@ -273,6 +268,133 @@ function toggleWindow(): void {
   }
 }
 
+function clearLongPressTimer(): void {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+  if (progressInterval) {
+    clearInterval(progressInterval);
+    progressInterval = null;
+  }
+  commandPressStart = null;
+  capturedActiveApp = null;
+  mainWindow?.webContents.send("global-key-progress", 0);
+}
+
+async function startLongPress(): Promise<void> {
+  try {
+    capturedActiveApp = await getActiveApp();
+  } catch {
+    capturedActiveApp = null;
+  }
+
+  commandPressStart = Date.now();
+
+  progressInterval = setInterval(() => {
+    if (commandPressStart) {
+      const elapsed = Date.now() - commandPressStart;
+      const progress = Math.min((elapsed / LONG_PRESS_DURATION) * 100, 100);
+      mainWindow?.webContents.send("global-key-progress", progress);
+    }
+  }, 50);
+
+  longPressTimer = setTimeout(() => {
+    clearInterval(progressInterval!);
+    progressInterval = null;
+    longPressTimer = null;
+    commandPressStart = null;
+
+    if (mainWindow) {
+      const cursorPoint = screen.getCursorScreenPoint();
+      const display = screen.getDisplayNearestPoint(cursorPoint);
+      const windowBounds = mainWindow.getBounds();
+
+      let x = cursorPoint.x - windowBounds.width / 2;
+      let y = cursorPoint.y - 50;
+
+      x = Math.max(
+        display.bounds.x,
+        Math.min(
+          x,
+          display.bounds.x + display.bounds.width - windowBounds.width
+        )
+      );
+      y = Math.max(
+        display.bounds.y,
+        Math.min(
+          y,
+          display.bounds.y + display.bounds.height - windowBounds.height
+        )
+      );
+
+      mainWindow.setPosition(Math.round(x), Math.round(y));
+      mainWindow.show();
+      mainWindow.focus();
+      fadeInWindow(mainWindow);
+      setTimeout(() => {
+        mainWindow?.webContents.send("global-key-activated", {
+          activated: true,
+          appName: capturedActiveApp,
+        });
+        mainWindow?.webContents.send("global-key-progress", 0);
+        capturedActiveApp = null;
+      }, 100);
+    }
+  }, LONG_PRESS_DURATION);
+}
+
+function setupGlobalKeyListener(): void {
+  try {
+    globalKeyListener = new GlobalKeyboardListener();
+  } catch {
+    return;
+  }
+
+  let isCommandPressed = false;
+  let otherKeyPressed = false;
+
+  globalKeyListener.addListener((e) => {
+    const key = e.name?.toUpperCase();
+    const isDown = e.state === "DOWN";
+
+    const isCommandKey =
+      key === "LEFT META" ||
+      key === "RIGHT META" ||
+      key?.includes("META") ||
+      key?.includes("CMD") ||
+      key?.includes("COMMAND");
+
+    if (isCommandKey) {
+      if (isDown) {
+        if (!isCommandPressed) {
+          isCommandPressed = true;
+          otherKeyPressed = false;
+          mainWindow?.webContents.send("global-key-state", {
+            key: "command",
+            pressed: true,
+          });
+          startLongPress();
+        }
+      } else {
+        isCommandPressed = false;
+        mainWindow?.webContents.send("global-key-state", {
+          key: "command",
+          pressed: false,
+        });
+        clearLongPressTimer();
+      }
+      return;
+    }
+
+    const isMouseEvent = key?.includes("MOUSE");
+    if (isDown && isCommandPressed && !otherKeyPressed && !isMouseEvent) {
+      otherKeyPressed = true;
+      clearLongPressTimer();
+    }
+  });
+}
+
 function setupGlobalShortcut(): void {
   globalShortcut.register("Command+1", toggleWindow);
   globalShortcut.register("Option+1", toggleWindow);
@@ -289,6 +411,7 @@ app.whenReady().then(() => {
   createWindow();
   setupGlobalShortcut();
   setupIpcHandlers();
+  setupGlobalKeyListener();
   openSecuritySet();
 });
 

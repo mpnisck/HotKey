@@ -56,23 +56,23 @@ function Info(): React.JSX.Element {
           </h1>
         </div>
 
-        <div className="mb-[2rem] p-[1rem] bg-[#f6f6f6] shadow-sm">
-          <p className="text-[#333] text-base text-center leading-7">
-            이 앱은 활성화된 메뉴바의 단축키 정보를 가져오고 있어요
+        <div className="mb-6 p-[1rem] bg-[#f6f6f6] shadow-sm">
+          <p className="text-[#333] text-base text-center leading-8">
+            현재 사용 중인 앱의 모든 단축키를 한눈에!
             <br />
-            손쉬운 사용 허용 후{" "}
-            <span className="inline mr-1.5 px-4 py-1 text-sm text-[#fff] bg-[#000] rounded-full">
+            <span className="inline px-3 py-1 text-sm text-[#fff] bg-[#000] rounded-full">
               사용 시작
             </span>
-            버튼을 누르고
-            <br />
+            {" → "}
+            <span className="text-[#FF8C00] font-semibold">앱 선택</span>
+            {" → "}
             <span className="text-[#FF8C00] font-semibold">
-              피그마 앱을 꼭 실행해 주세요!
+              ⌘ 2초 꾹 누르기
             </span>
           </p>
         </div>
 
-        <ul className="list-disc leading-7 text-[#777] text-sm mb-[2rem]">
+        <ul className="list-disc leading-7 text-[#777] text-sm">
           <li className="list-none">
             <h3 className="text-base text-[#000] font-bold py-[0.5rem]">
               macOS에서 개인정보 보호 해제
@@ -96,26 +96,47 @@ function Info(): React.JSX.Element {
             <span className="inline-block align-middle w-[21px] h-[21px] mr-1">
               <img src={accessImgUrl} alt="AccessIcon" />
             </span>
-            손쉬운 사용에서 + 버튼을 통해 응용 프로그램 중 HotKey앱을 추가
+            손쉬운 사용에서 + 버튼을 통해 응용 프로그램 중 HotKey 앱을 추가
           </li>
           <li className="ml-[1rem]">
-            HotKey 앱 제어를 허용 후 사용시작을 눌러주세요!
+            HotKey 앱 제어를 허용 후 사용법을 확인하세요!
           </li>
           <li className="list-none">
             <h3 className="text-base text-[#000] font-bold py-[0.5rem]">
               HotKey 사용법
             </h3>
           </li>
-          <li className="ml-[1rem]">
-            작업환경에서 원하는 단축키의 아이콘{" "}
-            <span className="text-[#FF8C00] font-semibold">(예시 : ⌘ 1)</span>{" "}
-            을 눌러보세요!
-            <br />
-          </li>
         </ul>
 
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="flex items-center gap-3 p-3 bg-[#f9f9f9] shadow-sm rounded-lg">
+            <span className="flex items-center justify-center w-6 h-6 text-xs font-regular text-white bg-[#333] rounded-full">
+              1
+            </span>
+            <span className="text-sm text-[#333]">사용 시작 클릭</span>
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-[#f9f9f9] shadow-sm rounded-lg">
+            <span className="flex items-center justify-center w-6 h-6 text-xs font-regular text-white bg-[#333] rounded-full">
+              2
+            </span>
+            <span className="text-sm text-[#333]">원하는 앱 활성화</span>
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-[#f9f9f9] shadow-sm rounded-lg">
+            <span className="flex items-center justify-center w-6 h-6 text-xs font-regular text-white bg-[#333] rounded-full">
+              3
+            </span>
+            <span className="text-sm text-[#333]">⌘ 2초간 꾹 누르기</span>
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-[#f9f9f9] shadow-sm rounded-lg">
+            <span className="flex items-center justify-center w-6 h-6 text-xs font-regular text-white bg-[#333] rounded-full">
+              4
+            </span>
+            <span className="text-sm text-[#333]">⌘⌥⌃⇧ 키로 바로 검색</span>
+          </div>
+        </div>
+
         <button
-          className={`w-[95%] h-[50px] rounded-full mx-auto my-[10px] text-xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00] ${
+          className={`w-[95%] h-[50px] rounded-full mx-auto mt-4 text-xl text-[#fff] relative z-10 cursor-pointer bg-[#000] transition-all hover:bg-[#FF8C00] ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           onClick={handleStart}

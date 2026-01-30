@@ -14,6 +14,9 @@ interface HotkeyState {
   isKeyActive: boolean;
   keyboardKeys: Set<string>;
   showMenuData: boolean;
+  isArmed: boolean;
+  isActivated: boolean;
+  longPressProgress: number;
 }
 
 interface HotkeyActions {
@@ -29,6 +32,10 @@ interface HotkeyActions {
   setIsKeyActive: (active: boolean) => void;
   addKeyboardKey: (key: string) => void;
   removeKeyboardKey: (key: string) => void;
+  setIsArmed: (armed: boolean) => void;
+  setIsActivated: (activated: boolean) => void;
+  setLongPressProgress: (progress: number) => void;
+  resetActivation: () => void;
 }
 
 type HotkeyStore = HotkeyState & HotkeyActions;
@@ -46,6 +53,9 @@ const useHotkeyStore = create<HotkeyStore>((set) => ({
   isKeyActive: false,
   keyboardKeys: new Set<string>(),
   showMenuData: true,
+  isArmed: false,
+  isActivated: false,
+  longPressProgress: 0,
 
   setMenuData: (data: MenuData) => set({ menuData: data }),
   setActiveApp: (app: string) => set({ activeApp: app }),
@@ -72,6 +82,19 @@ const useHotkeyStore = create<HotkeyStore>((set) => ({
       const newKeys = new Set(state.keyboardKeys);
       newKeys.delete(upperKey);
       return { keyboardKeys: newKeys };
+    }),
+
+  setIsArmed: (armed: boolean) => set({ isArmed: armed }),
+  setIsActivated: (activated: boolean) => set({ isActivated: activated }),
+  setLongPressProgress: (progress: number) =>
+    set({ longPressProgress: progress }),
+  resetActivation: () =>
+    set({
+      isArmed: false,
+      isActivated: false,
+      longPressProgress: 0,
+      menuData: {},
+      activeApp: "",
     }),
 }));
 
