@@ -103,24 +103,6 @@ tell application "System Events"
               try
                 set cmdChar to value of attribute "AXMenuItemCmdChar" of mi
                 if cmdChar is not missing value and cmdChar is not "" then
-                  set mods to ""
-                  set modVal to value of attribute "AXMenuItemCmdModifiers" of mi
-                  if modVal is not missing value then
-                    set m to modVal as number
-                    try
-                      set vkVal to value of attribute "AXMenuItemCmdVirtualKey" of mi
-                      if vkVal is not missing value then
-                        set vk to vkVal as number
-                        if vk = 122 or vk = 120 or vk = 99 or vk = 118 or vk = 96 or vk = 97 or vk = 98 or vk = 100 or vk = 101 or vk = 109 or vk = 103 or vk = 111 then
-                          set mods to mods & "🌐"
-                        end if
-                      end if
-                    end try
-                    if (m div 4) mod 2 = 1 then set mods to mods & "⌃"
-                    if (m div 2) mod 2 = 1 then set mods to mods & "⌥"
-                    if m mod 2 = 1 then set mods to mods & "⇧"
-                    if (m div 8) mod 2 = 0 then set mods to mods & "⌘"
-                  end if
                   set glyphChar to cmdChar
                   try
                     set glyphVal to value of attribute "AXMenuItemCmdGlyph" of mi
@@ -141,6 +123,82 @@ tell application "System Events"
                       if glyphVal = 107 then set glyphChar to "⇟"
                     end if
                   end try
+                  set mods to ""
+                  set modVal to value of attribute "AXMenuItemCmdModifiers" of mi
+                  if modVal is not missing value then
+                    set m to modVal as number
+                    set isFunctionKey to false
+                    set hasOtherModifiers to false
+                    if (m div 4) mod 2 = 1 then
+                      set mods to mods & "⌃"
+                      set hasOtherModifiers to true
+                    end if
+                    if (m div 2) mod 2 = 1 then
+                      set mods to mods & "⌥"
+                      set hasOtherModifiers to true
+                    end if
+                    if m mod 2 = 1 then
+                      set mods to mods & "⇧"
+                      set hasOtherModifiers to true
+                    end if
+                    set hasCommand to false
+                    if (m div 8) mod 2 = 0 then
+                      set mods to mods & "⌘"
+                      set hasCommand to true
+                    end if
+                    try
+                      set vkVal to value of attribute "AXMenuItemCmdVirtualKey" of mi
+                      if vkVal is not missing value then
+                        set vk to vkVal as number
+                        if vk = 122 then
+                          set glyphChar to "F1"
+                          set isFunctionKey to true
+                        else if vk = 120 then
+                          set glyphChar to "F2"
+                          set isFunctionKey to true
+                        else if vk = 99 then
+                          set glyphChar to "F3"
+                          set isFunctionKey to true
+                        else if vk = 118 then
+                          set glyphChar to "F4"
+                          set isFunctionKey to true
+                        else if vk = 96 then
+                          set glyphChar to "F5"
+                          set isFunctionKey to true
+                        else if vk = 97 then
+                          set glyphChar to "F6"
+                          set isFunctionKey to true
+                        else if vk = 98 then
+                          set glyphChar to "F7"
+                          set isFunctionKey to true
+                        else if vk = 100 then
+                          set glyphChar to "F8"
+                          set isFunctionKey to true
+                        else if vk = 101 then
+                          set glyphChar to "F9"
+                          set isFunctionKey to true
+                        else if vk = 109 then
+                          set glyphChar to "F10"
+                          set isFunctionKey to true
+                        else if vk = 103 then
+                          set glyphChar to "F11"
+                          set isFunctionKey to true
+                        else if vk = 111 then
+                          set glyphChar to "F12"
+                          set isFunctionKey to true
+                        else if vk = 105 then
+                          set glyphChar to "F13"
+                          set isFunctionKey to true
+                        else if vk = 107 then
+                          set glyphChar to "F14"
+                          set isFunctionKey to true
+                        else if vk = 113 then
+                          set glyphChar to "F15"
+                          set isFunctionKey to true
+                        end if
+                      end if
+                    end try
+                  end if
                   set sc to mods & glyphChar
                 end if
               end try
