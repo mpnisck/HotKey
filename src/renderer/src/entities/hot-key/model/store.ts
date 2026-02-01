@@ -19,22 +19,30 @@ interface HotkeyState {
   longPressProgress: number;
 }
 
+interface ModifierKeysState {
+  isCommandPressed: boolean;
+  isOptionPressed: boolean;
+  isControlPressed: boolean;
+  isShiftPressed: boolean;
+  isFnPressed: boolean;
+}
+
+interface ActivationState {
+  isArmed: boolean;
+  isActivated: boolean;
+  longPressProgress: number;
+}
+
 interface HotkeyActions {
   setMenuData: (data: MenuData) => void;
   setActiveApp: (app: string) => void;
   setError: (error: string) => void;
   setIsLoading: (loading: boolean) => void;
-  setIsCommandPressed: (pressed: boolean) => void;
-  setIsOptionPressed: (pressed: boolean) => void;
-  setIsControlPressed: (pressed: boolean) => void;
-  setIsShiftPressed: (pressed: boolean) => void;
-  setIsFnPressed: (pressed: boolean) => void;
+  updateModifierKeys: (keys: Partial<ModifierKeysState>) => void;
   setIsKeyActive: (active: boolean) => void;
   addKeyboardKey: (key: string) => void;
   removeKeyboardKey: (key: string) => void;
-  setIsArmed: (armed: boolean) => void;
-  setIsActivated: (activated: boolean) => void;
-  setLongPressProgress: (progress: number) => void;
+  updateActivationState: (state: Partial<ActivationState>) => void;
   resetActivation: () => void;
 }
 
@@ -61,11 +69,13 @@ const useHotkeyStore = create<HotkeyStore>((set) => ({
   setActiveApp: (app: string) => set({ activeApp: app }),
   setError: (error: string) => set({ error }),
   setIsLoading: (loading: boolean) => set({ isLoading: loading }),
-  setIsCommandPressed: (pressed: boolean) => set({ isCommandPressed: pressed }),
-  setIsOptionPressed: (pressed: boolean) => set({ isOptionPressed: pressed }),
-  setIsControlPressed: (pressed: boolean) => set({ isControlPressed: pressed }),
-  setIsShiftPressed: (pressed: boolean) => set({ isShiftPressed: pressed }),
-  setIsFnPressed: (pressed: boolean) => set({ isFnPressed: pressed }),
+
+  updateModifierKeys: (keys: Partial<ModifierKeysState>) =>
+    set((state) => ({
+      ...state,
+      ...keys,
+    })),
+
   setIsKeyActive: (active: boolean) => set({ isKeyActive: active }),
 
   addKeyboardKey: (key: string) =>
@@ -84,10 +94,12 @@ const useHotkeyStore = create<HotkeyStore>((set) => ({
       return { keyboardKeys: newKeys };
     }),
 
-  setIsArmed: (armed: boolean) => set({ isArmed: armed }),
-  setIsActivated: (activated: boolean) => set({ isActivated: activated }),
-  setLongPressProgress: (progress: number) =>
-    set({ longPressProgress: progress }),
+  updateActivationState: (activationState: Partial<ActivationState>) =>
+    set((state) => ({
+      ...state,
+      ...activationState,
+    })),
+
   resetActivation: () =>
     set({
       isArmed: false,

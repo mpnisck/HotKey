@@ -2,9 +2,9 @@ import React, { useCallback } from "react";
 import { useHotkeyStore } from "@/entities/hot-key";
 import { useKeyTracking } from "@/features/key-tracking/use-key-tracking";
 import { useAppDetection } from "@/features/app-detection/use-app-detection";
+import { useFilteredMenu } from "@/features/menu-filter/use-filtered-menu";
 import Keyboard from "@/widgets/keyboard-widget/keyboard";
 import MenuList from "@/widgets/menu-list-widget/menu-list";
-import { MenuData, MenuItem } from "@/shared/types";
 
 function Hotkey(): React.JSX.Element {
   const { showMenuData } = useHotkeyStore();
@@ -31,52 +31,17 @@ function Hotkey(): React.JSX.Element {
     longPressProgress,
   } = useKeyTracking(handleLongPressCommand);
 
-  const filteredMenuData: MenuData = isKeyActive
-    ? Object.entries(menuData).reduce((acc: MenuData, [category, items]) => {
-        const filteredItems = items.filter((item: MenuItem) => {
-          const shortcut = item.shortcut || "";
-
-          const matchConditions = [
-            {
-              symbol: "⌘",
-              pressed: isCommandPressed,
-              condition: shortcut.includes("⌘"),
-            },
-            {
-              symbol: "⌥",
-              pressed: isOptionPressed,
-              condition: shortcut.includes("⌥"),
-            },
-            {
-              symbol: "⌃",
-              pressed: isControlPressed,
-              condition: shortcut.includes("⌃"),
-            },
-            {
-              symbol: "⇧",
-              pressed: isShiftPressed,
-              condition: shortcut.includes("⇧"),
-            },
-            {
-              symbol: "🌐",
-              pressed: isFnPressed,
-              condition: shortcut.includes("🌐"),
-            },
-          ];
-
-          const activeModifiers = matchConditions.filter((mod) => mod.pressed);
-          return (
-            activeModifiers.length > 0 &&
-            activeModifiers.every((mod) => mod.condition)
-          );
-        });
-
-        if (filteredItems.length > 0) {
-          acc[category] = filteredItems;
-        }
-        return acc;
-      }, {})
-    : menuData;
+  const filteredMenuData = useFilteredMenu({
+    menuData,
+    isKeyActive,
+    modifiers: {
+      isCommandPressed,
+      isOptionPressed,
+      isControlPressed,
+      isShiftPressed,
+      isFnPressed,
+    },
+  });
 
   return (
     <div className="w-[95%] h-[670px] m-auto flex flex-col">

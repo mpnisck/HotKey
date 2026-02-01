@@ -15,9 +15,9 @@ function MenuList({ menuData, isKeyActive }: MenuListProps): React.JSX.Element {
             {category}
           </h2>
           <div className="grid gap-2">
-            {items.map((item, index) => (
+            {items.map((item) => (
               <div
-                key={index}
+                key={`${category}-${item.name}`}
                 className="flex justify-between items-center p-3 bg-[#fff] rounded"
               >
                 <span className="text-[#333] text-sm">{item.name}</span>

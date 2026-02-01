@@ -42,18 +42,6 @@ export const specialKeys = new Set<string>([
   "한/A",
 ]);
 
-export interface ModifierKeyConfig {
-  setter: string;
-  checker: string;
-}
-
-export const modifierKeys: Record<string, ModifierKeyConfig> = {
-  meta: { setter: "setIsCommandPressed", checker: "metaKey" },
-  alt: { setter: "setIsOptionPressed", checker: "altKey" },
-  ctrl: { setter: "setIsControlPressed", checker: "ctrlKey" },
-  shift: { setter: "setIsShiftPressed", checker: "shiftKey" },
-};
-
 export const specialKeyWidths: Record<string, string> = {
   Esc: "w-16",
   Tab: "w-18",

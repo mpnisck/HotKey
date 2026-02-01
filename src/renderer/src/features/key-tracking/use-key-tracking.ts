@@ -1,18 +1,10 @@
 import { useEffect, useRef, useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useHotkeyStore } from "@/entities/hot-key";
 
 const getStoreActions = () => useHotkeyStore.getState();
 
 const LONG_PRESS_DURATION = 2000;
-
-declare global {
-  interface Window {
-    api: {
-      invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
-      on: (channel: string, func: (...args: unknown[]) => void) => () => void;
-    };
-  }
-}
 
 interface UseKeyTrackingReturn {
   keyboardKeys: Set<string>;
@@ -30,7 +22,32 @@ interface UseKeyTrackingReturn {
 export const useKeyTracking = (
   onLongPressCommand?: (appName?: string) => void
 ): UseKeyTrackingReturn => {
-  const store = useHotkeyStore();
+  const {
+    keyboardKeys,
+    isKeyActive,
+    isCommandPressed,
+    isOptionPressed,
+    isControlPressed,
+    isShiftPressed,
+    isFnPressed,
+    isArmed,
+    isActivated,
+    longPressProgress,
+  } = useHotkeyStore(
+    useShallow((state) => ({
+      keyboardKeys: state.keyboardKeys,
+      isKeyActive: state.isKeyActive,
+      isCommandPressed: state.isCommandPressed,
+      isOptionPressed: state.isOptionPressed,
+      isControlPressed: state.isControlPressed,
+      isShiftPressed: state.isShiftPressed,
+      isFnPressed: state.isFnPressed,
+      isArmed: state.isArmed,
+      isActivated: state.isActivated,
+      longPressProgress: state.longPressProgress,
+    }))
+  );
+
   const commandPressedRef = useRef<boolean>(false);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressStartRef = useRef<number>(0);
@@ -53,7 +70,7 @@ export const useKeyTracking = (
       progressIntervalRef.current = null;
     }
     longPressStartRef.current = 0;
-    getStoreActions().setLongPressProgress(0);
+    getStoreActions().updateActivationState({ longPressProgress: 0 });
   }, []);
 
   const startLongPress = useCallback(() => {
@@ -65,7 +82,7 @@ export const useKeyTracking = (
     progressIntervalRef.current = setInterval(() => {
       const elapsed = Date.now() - longPressStartRef.current;
       const progress = Math.min((elapsed / LONG_PRESS_DURATION) * 100, 100);
-      getStoreActions().setLongPressProgress(progress);
+      getStoreActions().updateActivationState({ longPressProgress: progress });
     }, 50);
 
     longPressTimerRef.current = setTimeout(() => {
@@ -76,8 +93,10 @@ export const useKeyTracking = (
       longPressTimerRef.current = null;
       longPressStartRef.current = 0;
 
-      getStoreActions().setIsActivated(true);
-      getStoreActions().setLongPressProgress(0);
+      getStoreActions().updateActivationState({
+        isActivated: true,
+        longPressProgress: 0,
+      });
       onLongPressCommandRef.current?.();
     }, LONG_PRESS_DURATION);
   }, []);
@@ -85,42 +104,31 @@ export const useKeyTracking = (
   useEffect(() => {
     if (!window.api?.on) return;
 
-    const unsubscribeState = window.api.on(
-      "global-key-state",
-      (data: unknown) => {
-        const { key, pressed } = data as { key: string; pressed: boolean };
-        const actions = getStoreActions();
+    const unsubscribeState = window.api.on("global-key-state", (data) => {
+      const actions = getStoreActions();
 
-        if (key === "command") {
-          actions.setIsCommandPressed(pressed);
-          if (pressed) {
-            actions.setIsKeyActive(true);
-          } else {
-            actions.setIsKeyActive(false);
-          }
-        }
+      if (data.key === "command") {
+        actions.updateModifierKeys({ isCommandPressed: data.pressed });
+        actions.setIsKeyActive(data.pressed);
       }
-    );
+    });
 
     const unsubscribeProgress = window.api.on(
       "global-key-progress",
-      (progress: unknown) => {
-        const p = progress as number;
-        getStoreActions().setLongPressProgress(p);
+      (progress) => {
+        getStoreActions().updateActivationState({
+          longPressProgress: progress,
+        });
       }
     );
 
     const unsubscribeActivated = window.api.on(
       "global-key-activated",
-      (data: unknown) => {
-        const { activated, appName } = data as {
-          activated: boolean;
-          appName?: string;
-        };
+      (data) => {
         const actions = getStoreActions();
-        actions.setIsActivated(activated);
-        if (activated) {
-          onLongPressCommandRef.current?.(appName);
+        actions.updateActivationState({ isActivated: data.activated });
+        if (data.activated) {
+          onLongPressCommandRef.current?.(data.appName);
         }
       }
     );
@@ -136,119 +144,151 @@ export const useKeyTracking = (
     const pressedKeys = new Set<string>();
 
     const handleKeyDown = (event: KeyboardEvent): void => {
-      const actions = getStoreActions();
-      const key = event.key.toUpperCase();
-      const code = event.code;
+      try {
+        const actions = getStoreActions();
+        const key = event.key.toUpperCase();
+        const code = event.code;
 
-      event.preventDefault();
+        event.preventDefault();
 
-      pressedKeys.add(key);
-      if (code) pressedKeys.add(code);
-      actions.addKeyboardKey(key);
+        pressedKeys.add(key);
+        if (code) pressedKeys.add(code);
+        actions.addKeyboardKey(key);
 
-      let isAnyModifierActive = false;
+        const modifierUpdates: Partial<{
+          isCommandPressed: boolean;
+          isOptionPressed: boolean;
+          isControlPressed: boolean;
+          isShiftPressed: boolean;
+          isFnPressed: boolean;
+        }> = {};
 
-      if (event.metaKey) {
-        actions.setIsCommandPressed(true);
-        isAnyModifierActive = true;
+        let isAnyModifierActive = false;
 
-        if (!commandPressedRef.current) {
-          commandPressedRef.current = true;
-          if (!event.altKey && !event.ctrlKey && !event.shiftKey) {
-            startLongPress();
+        if (event.metaKey) {
+          modifierUpdates.isCommandPressed = true;
+          isAnyModifierActive = true;
+
+          if (!commandPressedRef.current) {
+            commandPressedRef.current = true;
+            if (!event.altKey && !event.ctrlKey && !event.shiftKey) {
+              startLongPress();
+            }
           }
         }
-      }
-      if (event.altKey) {
-        actions.setIsOptionPressed(true);
-        isAnyModifierActive = true;
-        clearLongPressTimer();
-      }
-      if (event.ctrlKey) {
-        actions.setIsControlPressed(true);
-        isAnyModifierActive = true;
-        clearLongPressTimer();
-      }
-      if (event.shiftKey) {
-        actions.setIsShiftPressed(true);
-        isAnyModifierActive = true;
-        clearLongPressTimer();
-      }
+        if (event.altKey) {
+          modifierUpdates.isOptionPressed = true;
+          isAnyModifierActive = true;
+          clearLongPressTimer();
+        }
+        if (event.ctrlKey) {
+          modifierUpdates.isControlPressed = true;
+          isAnyModifierActive = true;
+          clearLongPressTimer();
+        }
+        if (event.shiftKey) {
+          modifierUpdates.isShiftPressed = true;
+          isAnyModifierActive = true;
+          clearLongPressTimer();
+        }
 
-      const isFnPressed =
-        event.key.toLowerCase() === "fn" ||
-        code === "Fn" ||
-        code === "Function";
-      const isGlobePressed =
-        event.key === "Globe" ||
-        event.key === "Lang1" ||
-        code === "Lang1" ||
-        code === "IntlBackslash";
+        const isFnPressed =
+          event.key.toLowerCase() === "fn" ||
+          code === "Fn" ||
+          code === "Function";
+        const isGlobePressed =
+          event.key === "Globe" ||
+          event.key === "Lang1" ||
+          code === "Lang1" ||
+          code === "IntlBackslash";
 
-      if (isFnPressed || isGlobePressed) {
-        actions.setIsFnPressed(true);
-        isAnyModifierActive = true;
-        clearLongPressTimer();
-      }
+        if (isFnPressed || isGlobePressed) {
+          modifierUpdates.isFnPressed = true;
+          isAnyModifierActive = true;
+          clearLongPressTimer();
+        }
 
-      if (!event.metaKey && key !== "META") {
-        clearLongPressTimer();
-      }
+        if (Object.keys(modifierUpdates).length > 0) {
+          actions.updateModifierKeys(modifierUpdates);
+        }
 
-      if (isAnyModifierActive) {
-        actions.setIsKeyActive(true);
+        if (!event.metaKey && key !== "META") {
+          clearLongPressTimer();
+        }
+
+        if (isAnyModifierActive) {
+          actions.setIsKeyActive(true);
+        }
+      } catch (error) {
+        console.error("Error handling keydown event:", error);
       }
     };
 
     const handleKeyUp = (event: KeyboardEvent): void => {
-      const actions = getStoreActions();
-      const key = event.key.toUpperCase();
-      const code = event.code;
+      try {
+        const actions = getStoreActions();
+        const key = event.key.toUpperCase();
+        const code = event.code;
 
-      pressedKeys.delete(key);
-      if (code) pressedKeys.delete(code);
-      actions.removeKeyboardKey(key);
+        pressedKeys.delete(key);
+        if (code) pressedKeys.delete(code);
+        actions.removeKeyboardKey(key);
 
-      if (!event.metaKey && commandPressedRef.current) {
-        commandPressedRef.current = false;
-        actions.setIsCommandPressed(false);
-        clearLongPressTimer();
-      }
+        const modifierUpdates: Partial<{
+          isCommandPressed: boolean;
+          isOptionPressed: boolean;
+          isControlPressed: boolean;
+          isShiftPressed: boolean;
+          isFnPressed: boolean;
+        }> = {};
 
-      if (!event.altKey) actions.setIsOptionPressed(false);
-      if (!event.ctrlKey) actions.setIsControlPressed(false);
-      if (!event.shiftKey) actions.setIsShiftPressed(false);
+        if (!event.metaKey && commandPressedRef.current) {
+          commandPressedRef.current = false;
+          modifierUpdates.isCommandPressed = false;
+          clearLongPressTimer();
+        }
 
-      const isFnStillPressed =
-        pressedKeys.has("FN") ||
-        pressedKeys.has("Fn") ||
-        pressedKeys.has("Function") ||
-        event.key.toLowerCase() === "fn" ||
-        code === "Fn" ||
-        code === "Function";
-      const isGlobeStillPressed =
-        pressedKeys.has("GLOBE") ||
-        pressedKeys.has("Lang1") ||
-        pressedKeys.has("IntlBackslash") ||
-        event.key === "Globe" ||
-        event.key === "Lang1" ||
-        code === "Lang1" ||
-        code === "IntlBackslash";
+        if (!event.altKey) modifierUpdates.isOptionPressed = false;
+        if (!event.ctrlKey) modifierUpdates.isControlPressed = false;
+        if (!event.shiftKey) modifierUpdates.isShiftPressed = false;
 
-      if (!isFnStillPressed && !isGlobeStillPressed) {
-        actions.setIsFnPressed(false);
-      }
+        const isFnStillPressed =
+          pressedKeys.has("FN") ||
+          pressedKeys.has("Fn") ||
+          pressedKeys.has("Function") ||
+          event.key.toLowerCase() === "fn" ||
+          code === "Fn" ||
+          code === "Function";
+        const isGlobeStillPressed =
+          pressedKeys.has("GLOBE") ||
+          pressedKeys.has("Lang1") ||
+          pressedKeys.has("IntlBackslash") ||
+          event.key === "Globe" ||
+          event.key === "Lang1" ||
+          code === "Lang1" ||
+          code === "IntlBackslash";
 
-      const hasActiveModifier =
-        event.metaKey ||
-        event.altKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        isFnStillPressed ||
-        isGlobeStillPressed;
+        if (!isFnStillPressed && !isGlobeStillPressed) {
+          modifierUpdates.isFnPressed = false;
+        }
 
-      if (!hasActiveModifier) {
-        actions.setIsKeyActive(false);
+        if (Object.keys(modifierUpdates).length > 0) {
+          actions.updateModifierKeys(modifierUpdates);
+        }
+
+        const hasActiveModifier =
+          event.metaKey ||
+          event.altKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          isFnStillPressed ||
+          isGlobeStillPressed;
+
+        if (!hasActiveModifier) {
+          actions.setIsKeyActive(false);
+        }
+      } catch (error) {
+        console.error("Error handling keyup event:", error);
       }
     };
 
@@ -263,15 +303,15 @@ export const useKeyTracking = (
   }, [startLongPress, clearLongPressTimer]);
 
   return {
-    keyboardKeys: store.keyboardKeys,
-    isKeyActive: store.isKeyActive,
-    isCommandPressed: store.isCommandPressed,
-    isOptionPressed: store.isOptionPressed,
-    isControlPressed: store.isControlPressed,
-    isShiftPressed: store.isShiftPressed,
-    isFnPressed: store.isFnPressed,
-    isArmed: store.isArmed,
-    isActivated: store.isActivated,
-    longPressProgress: store.longPressProgress,
+    keyboardKeys,
+    isKeyActive,
+    isCommandPressed,
+    isOptionPressed,
+    isControlPressed,
+    isShiftPressed,
+    isFnPressed,
+    isArmed,
+    isActivated,
+    longPressProgress,
   };
 };

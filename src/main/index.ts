@@ -403,6 +403,11 @@ async function startLongPress(): Promise<void> {
 }
 
 function setupGlobalKeyListener(): void {
+  if (globalKeyListener) {
+    globalKeyListener.kill();
+    globalKeyListener = null;
+  }
+
   try {
     globalKeyListener = new GlobalKeyboardListener();
   } catch {
@@ -453,6 +458,13 @@ function setupGlobalKeyListener(): void {
   });
 }
 
+function cleanupGlobalKeyListener(): void {
+  if (globalKeyListener) {
+    globalKeyListener.kill();
+    globalKeyListener = null;
+  }
+}
+
 function setupGlobalShortcut(): void {
   globalShortcut.register("Command+1", toggleWindow);
   globalShortcut.register("Option+1", toggleWindow);
@@ -485,4 +497,5 @@ app.on("window-all-closed", () => {
 
 app.on("will-quit", () => {
   globalShortcut.unregisterAll();
+  cleanupGlobalKeyListener();
 });
