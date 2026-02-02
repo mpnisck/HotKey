@@ -13,6 +13,7 @@
    - [알아두면 유용한 단축키 정보를 검색하지 않고 바로 알 수는 없을까?](#알아두면-유용한-단축키-정보를-검색하지-않고-바로-알-수는-없을까)
 2. [HotKey 기능 미리보기](#HotKey-기능-미리보기)
    - [사용시작 버튼 원클릭으로 메뉴바의 단축키 정보 수집](#사용시작-버튼-원클릭으로-메뉴바의-단축키-정보-수집)
+   - [Command 롱프레스로 전역 활성화 기능](#command-롱프레스로-전역-활성화-기능)
    - [단축키 입력 시 전역 안내 화면 호출 기능](#단축키-입력-시-전역-안내-화면-호출-기능)
    - [필터링된 단축키 정보 안내](#필터링된-단축키-정보-안내)
    - [가상키보드을 통한 키보드 액션](#가상키보드을-통한-키보드-액션)
@@ -27,6 +28,7 @@
    - [메뉴바 단축키 정보에 맞는 특수기호 추출하기](#메뉴바-단축키-정보에-맞는-특수기호-추출하기)
    - [메뉴바 최종 단축키 생성](#메뉴바-최종-단축키-생성)
    - [UI 고려사항](#UI-고려사항)
+   - [전역 키 리스너 및 Command 롱프레스 활성화 기능](#전역-키-리스너-및-command-롱프레스-활성화-기능)
 5. [개발 과정에서 부딪쳤던 이슈](#개발-과정에서-부딪쳤던-이슈)
    - [UI 스크랩핑 시간 소요 이슈](#UI-스크랩핑-시간-소요-이슈)
    - [단축키 아이콘 실제 UI와 다른 이슈](#단축키-아이콘-실제-ui와-다른-이슈)
@@ -57,12 +59,16 @@
 
 <img src="READMEIMG/README_IMG03_feature_01.gif" alt="feat" />
 
-### 단축키 입력 시 전역 안내 화면 호출 기능
+### Command 롱프레스로 전역 활성화 기능
 
-`⌘ 1`을 누르는 순간 작업을 진행하는 해당 화면에서 단축키 정보가 필터링된 화면으로
-HotKey 앱 화면이 열리고 다시 `⌘ 1` 누르면 앱이 닫아집니다.
+어떤 앱에서든 `⌘ Command` 키를 **2초간 꾹 누르면** 마우스 커서 위치 근처에 HotKey 앱이 자동으로 활성화됩니다.
+원형 프로그레스바로 진행률을 실시간으로 확인할 수 있습니다.
 
 <img src="READMEIMG/README_IMG04_feature_02.gif" alt="feat" />
+
+### 단축키 입력 시 전역 안내 화면 호출 기능
+
+`⌘ 1`, `⌥ 1`, `⇧ 1` 단축키로도 HotKey 앱 화면을 토글할 수 있습니다.
 
 ### 필터링된 단축키 정보 안내
 
@@ -103,6 +109,11 @@ HotKey 앱 화면이 열리고 다시 `⌘ 1` 누르면 앱이 닫아집니다.
 
 - **FSD 아키텍처 적용**<br>
   Feature-Sliced Design 구조와 함께 TypeScript를 도입하여 확장 가능하고 유지보수가 용이한 코드베이스를 구축하였습니다.
+  기능별로 분리된 커스텀 훅(`useKeyTracking`, `useAppDetection`, `useFilteredMenu`)을 통해
+  관심사 분리와 재사용성을 극대화하였습니다.
+
+- **절대 경로 마이그레이션**<br>
+  `@/` 경로 별칭을 통해 상대 경로의 복잡성을 제거하고 가독성을 향상시켰습니다.
 
 ![Electron](https://img.shields.io/badge/Electron_38--Label?style=for-the-badge&logo=electron&logoColor=fff&logoSize=autoa&label=Electron&labelColor=%2347848F&color=47848F)
 
@@ -159,6 +170,19 @@ HotKey 앱 화면이 열리고 다시 `⌘ 1` 누르면 앱이 닫아집니다.
 - **자동 리렌더링 최적화**<br>
   상태를 업데이트할 때 변경된 부분만 리렌더링하도록 최적화됩니다.
   이로 인해 불필요한 리렌더링을 방지하고 애플리케이션 성능을 최적화할 수 있습니다.
+
+- **useShallow를 통한 배치 업데이트**<br>
+  `zustand/react/shallow`의 useShallow 훅을 활용하여 여러 상태값을 효율적으로 구독하고,
+  불필요한 리렌더링을 방지하는 배치 업데이트를 구현하였습니다.
+
+![node-global-key-listener](https://img.shields.io/badge/node--global--key--listener--fff?style=for-the-badge&logo=npm&logoColor=fff&logoSize=auto&label=node-global-key-listener&labelColor=CB3837&color=CB3837)
+
+- **전역 키보드 이벤트 감지**<br>
+  앱이 포커스되지 않은 상태에서도 키보드 입력을 감지할 수 있어,
+  Command 롱프레스 활성화 기능을 구현하는 데 핵심적인 역할을 합니다.
+
+- **크로스 플랫폼 지원**<br>
+  macOS, Windows, Linux에서 동일한 API로 전역 키보드 이벤트를 처리할 수 있습니다.
 
 ---
 
@@ -239,6 +263,22 @@ app.whenReady().then(() => {
 | **앱 전환 시 자동 업데이트** | 사용자가 다른 앱으로 전환할 때 자동으로 새로운 앱의 메뉴바 단축키 정보를 수집하고 UI에 반영합니다.                                                               |
 | **AppleScript 로직 간소화**  | 기존의 복잡한 스크립트 구조를 간소화하여 앱 이름을 동적으로 전달받아 처리하도록 개선하였습니다. <br> 이를 통해 코드의 유지보수성과 실행 효율성이 향상되었습니다. |
 
+#### Function 키 (F1-F15) 단축키 지원
+
+`AXMenuItemCmdVirtualKey` 속성을 활용하여 Function 키가 포함된 단축키를 정확하게 추출합니다.
+
+| **Virtual Key Code** | **키** | **Virtual Key Code** | **키** |
+| -------------------- | ------ | -------------------- | ------ |
+| `122`                | F1     | `109`                | F10    |
+| `120`                | F2     | `103`                | F11    |
+| `99`                 | F3     | `111`                | F12    |
+| `118`                | F4     | `105`                | F13    |
+| `96`                 | F5     | `107`                | F14    |
+| `97`                 | F6     | `113`                | F15    |
+| `98`                 | F7     |                      |        |
+| `100`                | F8     |                      |        |
+| `101`                | F9     |                      |        |
+
 #### 특수 키 심볼 변환 (normalizeShortcut 함수)
 
 | **charCode**   | **심볼** | **설명**         |
@@ -251,6 +291,21 @@ app.whenReady().then(() => {
 | `0x1d`         | →        | Right Arrow      |
 | `0x1e`         | ↑        | Up Arrow         |
 | `0x1f`         | ↓        | Down Arrow       |
+
+#### AppleScript Glyph 값 기반 특수 키 변환
+
+| **glyph 값** | **심볼** | **설명**       |
+| ------------ | -------- | -------------- |
+| `2`          | ⇥        | Tab            |
+| `4`          | ⌤        | Enter          |
+| `9`          | ␣        | Space          |
+| `10`         | ⌦        | Forward Delete |
+| `11`         | ↩        | Return         |
+| `23`         | ⌫        | Delete         |
+| `27`         | ⎋        | Escape         |
+| `28`         | ⌧        | Clear          |
+| `98`         | ⇞        | Page Up        |
+| `100-107`    | ←→↑↓⇟    | 방향키/Page Down |
 
 ```typescript
 const specialKeySymbols = new Map<number, string>([
@@ -475,6 +530,17 @@ macOS는 개인정보 보호와 보안을 매우 중요시 여기기 때문에 �
 | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | <img src="READMEIMG/README_IMG11_keyboard_before.png" alt="keyboard"  width="400px"/> | <img src="READMEIMG/README_IMG12_keyboard_after.png" alt="keyboard"  width="400px"/> |
 
+#### 4. **Command 롱프레스 활성화 안내 UI**
+
+단축키를 확인하기 위한 직관적인 안내 화면을 제공하여 사용자가 쉽게 앱을 활성화할 수 있도록 개선하였습니다.
+
+| **기능**                     | **설명**                                                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **단계별 사용법 안내**       | 4단계 그리드 형태로 사용법을 시각적으로 안내합니다. (사용 시작 → 앱 활성화 → ⌘ 2초 누르기 → 키로 검색)                |
+| **원형 프로그레스바**        | Command 키 롱프레스 시 진행률을 SVG 원형 프로그레스바로 실시간 표시합니다.                                          |
+| **진행률 텍스트 표시**       | 롱프레스 진행 중 "XX% 진행 중..." 텍스트로 현재 상태를 안내합니다.                                                  |
+| **대기 상태 표시**           | 앱이 준비 상태일 때 "대기 중..." 애니메이션 뱃지를 표시합니다.                                                       |
+
 # 개발 과정에서 부딪쳤던 이슈
 
 ### UI 스크랩핑 시간 소요 이슈
@@ -512,6 +578,53 @@ macOS는 개인정보 보호와 보안을 매우 중요시 여기기 때문에 �
 | **특수 키 심볼 변환 (AppleScript)**                           | `AXMenuItemCmdGlyph` 속성을 사용하여 특수 키를 macOS 표준 심볼로 자동 변환합니다. <br> **glyph 값 매핑**: <br> `2`: ⇥(Tab), `4`: ⌤(Enter), `9`: ␣(Space), `10`: ⌦(Forward Delete), <br> `11`: ↩(Return), `23`: ⌫(Delete), `27`: ⎋(Escape), `28`: ⌧(Clear), <br> `98`: ⇞(Page Up), `100`: ←, `101`: →, `104`: ↑, `106`: ↓, `107`: ⇟(Page Down) |
 | **특수 키 심볼 변환 (TypeScript)**                            | `normalizeShortcut` 함수를 통해 AppleScript에서 받은 특수 키 charCode를 macOS 심볼로 변환합니다. <br> `0x09`→⇥(Tab), `0x7f`→⌫(Delete), `0x1b`→⎋(Escape), `0x0d`→↩(Return), `0x1c-0x1f`→←→↑↓(방향키)                                                                                                                                           |
 | **동적 앱 감지 적용**                                         | `getActiveApp` 함수로 현재 활성화된 앱을 실시간 감지하고, `getMacMenuBarInfo` 함수로 해당 앱의 메뉴바 단축키 정보를 자동으로 수집합니다. <br> 앱 전환 시 자동으로 새로운 앱의 단축키 정보를 로드합니다.                                                                                                                                        |
+| **Function 키 단축키 지원**                                   | `AXMenuItemCmdVirtualKey` 속성을 활용하여 F1-F15 Function 키가 포함된 단축키를 정확하게 추출합니다. Virtual Key Code를 기반으로 각 Function 키를 매핑합니다.                                                                                                                                                                                   |
+
+---
+
+### 전역 키 리스너 및 Command 롱프레스 활성화 기능
+
+#### node-global-key-listener를 활용한 전역 키보드 감지
+
+| **기능**                      | **설명**                                                                                                                                                              |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **전역 키보드 이벤트 감지**   | `node-global-key-listener` 라이브러리를 통해 HotKey 앱이 포커스되지 않은 상태에서도 키보드 입력을 감지합니다.                                                         |
+| **Command 키 롱프레스 감지**  | Command(⌘) 키를 2초간 누르면 자동으로 HotKey 앱이 활성화됩니다. 다른 키와 조합되면 롱프레스가 취소됩니다.                                                              |
+| **실시간 진행률 표시**        | 50ms 간격으로 롱프레스 진행률을 계산하여 원형 프로그레스바로 표시합니다.                                                                                               |
+| **마우스 커서 기반 창 위치**  | 롱프레스 완료 시 마우스 커서 위치 근처에 HotKey 창이 나타나며, 화면 경계를 벗어나지 않도록 자동 조정됩니다.                                                            |
+
+```typescript
+const LONG_PRESS_DURATION = 2000;
+
+function setupGlobalKeyListener(): void {
+  globalKeyListener = new GlobalKeyboardListener();
+
+  globalKeyListener.addListener((e) => {
+    const key = e.name?.toUpperCase();
+    const isDown = e.state === "DOWN";
+
+    const isCommandKey =
+      key === "LEFT META" || key === "RIGHT META" ||
+      key?.includes("META") || key?.includes("COMMAND");
+
+    if (isCommandKey && isDown && !isCommandPressed) {
+      startLongPress();
+    } else if (isCommandKey && !isDown) {
+      clearLongPressTimer();
+    }
+  });
+}
+```
+
+#### IPC 통신을 통한 렌더러 프로세스 연동
+
+| **채널**                | **설명**                                                                   |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `global-key-state`      | Command 키의 눌림/해제 상태를 렌더러에 전달                                |
+| `global-key-progress`   | 롱프레스 진행률(0-100%)을 실시간으로 렌더러에 전달                         |
+| `global-key-activated`  | 롱프레스 완료 시 활성화 상태와 현재 앱 이름을 렌더러에 전달                |
+
+---
 
 ### HotKey앱 다운로드 파일 용량 초과 이슈
 

@@ -12,7 +12,7 @@ declare global {
   interface Window {
     api: {
       invoke(channel: "get-active-app"): Promise<string>;
-      invoke(channel: "get-menu-items", appName: string): Promise<MenuItem[]>;
+      invoke(channel: "get-menu-info", appName?: string): Promise<MenuItem[]>;
       on(
         channel: "global-key-state",
         func: (data: GlobalKeyStateData) => void
