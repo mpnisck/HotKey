@@ -1,13 +1,19 @@
-appId: com.electron.app
-productName: hotkey
+appId: com.hotkey.app
+productName: HotKey
+compression: maximum
 directories:
   buildResources: build
 files:
   - "!**/.vscode/*"
   - "!src/*"
+  - "!dist/*"
+  - "!node_modules/*"
   - "!electron.vite.config.{js,ts,mjs,cjs}"
   - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
   - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
+  - "!{.husky,.claude,.gitignore,tsconfig.json,tsconfig.node.json,tsconfig.node.tsbuildinfo}"
+  - "!{tailwind.config.js,postcss.config.mjs,eslint.config.js}"
+  - "!READMEIMG/*"
 asarUnpack:
   - resources/**
 win:
@@ -18,12 +24,14 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
+  identity: null
+  hardenedRuntime: false
+  icon: build/icon.icns
+  category: public.app-category.productivity
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+    NSAppleEventsUsageDescription: HotKey needs to control other applications to provide global keyboard shortcuts.
+    NSAccessibilityUsageDescription: HotKey needs accessibility access to monitor global keyboard events.
   notarize: false
 dmg:
   artifactName: ${name}-${version}.${ext}
