@@ -33,6 +33,7 @@
    - [UI 스크랩핑 시간 소요 이슈](#UI-스크랩핑-시간-소요-이슈)
    - [단축키 아이콘 실제 UI와 다른 이슈](#단축키-아이콘-실제-ui와-다른-이슈)
    - [HotKey앱 다운로드 파일 용량 초과 이슈](#HotKey앱-다운로드-파일-용량-초과-이슈)
+   - [빌드 크기 최적화 (DMG 203MB → 96MB)](#빌드-크기-최적화-dmg-203mb--96mb)
 6. [회고록](#회고록)
 
 # 개발 배경
@@ -115,7 +116,7 @@
 - **절대 경로 마이그레이션**<br>
   `@/` 경로 별칭을 통해 상대 경로의 복잡성을 제거하고 가독성을 향상시켰습니다.
 
-![Electron](https://img.shields.io/badge/Electron_38--Label?style=for-the-badge&logo=electron&logoColor=fff&logoSize=autoa&label=Electron&labelColor=%2347848F&color=47848F)
+![Electron](https://img.shields.io/badge/Electron_35--Label?style=for-the-badge&logo=electron&logoColor=fff&logoSize=autoa&label=Electron&labelColor=%2347848F&color=47848F)
 
 - **웹 기술을 사용한 데스크탑 앱 개발**<br>
   HTML, CSS, JavaScript을 통해 웹 개발을 진행한 적이 있어 3주의 단기 프로젝트 기간동안 적용하기에 적합하다고 판단하였습니다.
@@ -248,12 +249,12 @@ app.whenReady().then(() => {
 
 ### 사용자의 활성화된 앱 메뉴바 정보 가져오기
 
-| **AppleScript 사용 (osascript)**                                                                                                                                  | **TypeScript의 `exec` 함수 사용**                                                                                                                                                                                   |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **AppleScript**는 문자열 기반의 스크립트 언어로 외부 프로그램과 상호작용할 때 문자열을 전달하고 실행할 명령이나 데이터를 문자열 형식으로 표현해야 합니다.         | `exec` 함수는 외부 명령어를 실행하고, 해당 명령어의 표준 출력(stdout)과 표준 에러(stderr)를 반환받을 수 있게 해주는 함수입니다. 실행이 끝나면 콜백 함수가 호출되어 결과를 처리합니다.                               |
-| AppleScript 자체로는 macOS 상단 메뉴바의 모든 정보나 아이콘을 추출할 수 없고, **System Events** 애플리케이션을 사용하여 메뉴바 항목을 탐색하고 정보를 가져옵니다. | `osascript`는 터미널을 통해 AppleScript를 실행하고 결과를 받을 수 있는 명령어 라인 도구입니다.<br> 결과는 `"메뉴명 > 항목명 \| 단축키"` 형식으로 반환됩니다.                                                        |
-| `repeat with mb in menu bar items of menu bar 1`로 메뉴바 항목을 순회하고, `repeat with mi in menu items of menu 1 of mb`로 각 메뉴의 하위 항목들을 처리합니다.   | 파싱된 결과는 `stdout.trim().split(", ")`로 분리 후 `normalizeShortcut` 함수를 통해 특수 키 심볼을 변환하여 최종 `MenuItem[]` 배열로 반환합니다.                                                                    |
-| 단축키 정보는 `sc` 변수에 저장되며, 모디파이어(`mods`)와 키 문자(`glyphChar`)를 결합하여 생성합니다. 에러 발생 시 `try` 블록으로 안전하게 처리합니다.             | 실패할 경우 `reject`를 호출하여 에러 처리 핸들링을 하였습니다.                                                                                                                                                      |
+| **AppleScript 사용 (osascript)**                                                                                                                                  | **TypeScript의 `exec` 함수 사용**                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AppleScript**는 문자열 기반의 스크립트 언어로 외부 프로그램과 상호작용할 때 문자열을 전달하고 실행할 명령이나 데이터를 문자열 형식으로 표현해야 합니다.         | `exec` 함수는 외부 명령어를 실행하고, 해당 명령어의 표준 출력(stdout)과 표준 에러(stderr)를 반환받을 수 있게 해주는 함수입니다. 실행이 끝나면 콜백 함수가 호출되어 결과를 처리합니다. |
+| AppleScript 자체로는 macOS 상단 메뉴바의 모든 정보나 아이콘을 추출할 수 없고, **System Events** 애플리케이션을 사용하여 메뉴바 항목을 탐색하고 정보를 가져옵니다. | `osascript`는 터미널을 통해 AppleScript를 실행하고 결과를 받을 수 있는 명령어 라인 도구입니다.<br> 결과는 `"메뉴명 > 항목명 \| 단축키"` 형식으로 반환됩니다.                          |
+| `repeat with mb in menu bar items of menu bar 1`로 메뉴바 항목을 순회하고, `repeat with mi in menu items of menu 1 of mb`로 각 메뉴의 하위 항목들을 처리합니다.   | 파싱된 결과는 `stdout.trim().split(", ")`로 분리 후 `normalizeShortcut` 함수를 통해 특수 키 심볼을 변환하여 최종 `MenuItem[]` 배열로 반환합니다.                                      |
+| 단축키 정보는 `sc` 변수에 저장되며, 모디파이어(`mods`)와 키 문자(`glyphChar`)를 결합하여 생성합니다. 에러 발생 시 `try` 블록으로 안전하게 처리합니다.             | 실패할 경우 `reject`를 호출하여 에러 처리 핸들링을 하였습니다.                                                                                                                        |
 
 #### 동적 앱 감지 기능 추가
 
@@ -286,7 +287,7 @@ app.whenReady().then(() => {
 | `0x09`         | ⇥        | Tab              |
 | `0x08`, `0x7f` | ⌫        | Delete/Backspace |
 | `0x1b`         | ⎋        | Escape           |
-| `0x0d`         | ↩       | Return/Enter     |
+| `0x0d`         | ↩        | Return/Enter     |
 | `0x1c`         | ←        | Left Arrow       |
 | `0x1d`         | →        | Right Arrow      |
 | `0x1e`         | ↑        | Up Arrow         |
@@ -294,17 +295,17 @@ app.whenReady().then(() => {
 
 #### AppleScript Glyph 값 기반 특수 키 변환
 
-| **glyph 값** | **심볼** | **설명**       |
-| ------------ | -------- | -------------- |
-| `2`          | ⇥        | Tab            |
-| `4`          | ⌤        | Enter          |
-| `9`          | ␣        | Space          |
-| `10`         | ⌦        | Forward Delete |
-| `11`         | ↩        | Return         |
-| `23`         | ⌫        | Delete         |
-| `27`         | ⎋        | Escape         |
-| `28`         | ⌧        | Clear          |
-| `98`         | ⇞        | Page Up        |
+| **glyph 값** | **심볼** | **설명**         |
+| ------------ | -------- | ---------------- |
+| `2`          | ⇥        | Tab              |
+| `4`          | ⌤        | Enter            |
+| `9`          | ␣        | Space            |
+| `10`         | ⌦        | Forward Delete   |
+| `11`         | ↩        | Return           |
+| `23`         | ⌫        | Delete           |
+| `27`         | ⎋        | Escape           |
+| `28`         | ⌧        | Clear            |
+| `98`         | ⇞        | Page Up          |
 | `100-107`    | ←→↑↓⇟    | 방향키/Page Down |
 
 ```typescript
@@ -348,10 +349,16 @@ function getActiveApp(): Promise<string> {
       `osascript -e "${activeAppScript.replace(/"/g, '\\"')}"`,
       (error, stdout) => {
         if (error) {
-          reject(new Error(`활성 앱 확인 오류: ${error.message}`));
+          reject(new Error(error.message));
           return;
         }
-        resolve(stdout.trim());
+
+        const activeApp = stdout.trim();
+        if (!activeApp) {
+          reject(new Error("활성화된 앱을 찾을 수 없습니다."));
+        } else {
+          resolve(activeApp);
+        }
       }
     );
   });
@@ -380,15 +387,6 @@ tell application "System Events"
               try
                 set cmdChar to value of attribute "AXMenuItemCmdChar" of mi
                 if cmdChar is not missing value and cmdChar is not "" then
-                  set mods to ""
-                  set modVal to value of attribute "AXMenuItemCmdModifiers" of mi
-                  if modVal is not missing value then
-                    set m to modVal as number
-                    if (m div 4) mod 2 = 1 then set mods to mods & "⌃"
-                    if (m div 2) mod 2 = 1 then set mods to mods & "⌥"
-                    if m mod 2 = 1 then set mods to mods & "⇧"
-                    if (m div 8) mod 2 = 0 then set mods to mods & "⌘"
-                  end if
                   set glyphChar to cmdChar
                   try
                     set glyphVal to value of attribute "AXMenuItemCmdGlyph" of mi
@@ -409,6 +407,44 @@ tell application "System Events"
                       if glyphVal = 107 then set glyphChar to "⇟"
                     end if
                   end try
+                  set mods to ""
+                  set modVal to value of attribute "AXMenuItemCmdModifiers" of mi
+                  if modVal is not missing value then
+                    set m to modVal as number
+                    set isFunctionKey to false
+                    set hasOtherModifiers to false
+                    if (m div 4) mod 2 = 1 then
+                      set mods to mods & "⌃"
+                      set hasOtherModifiers to true
+                    end if
+                    if (m div 2) mod 2 = 1 then
+                      set mods to mods & "⌥"
+                      set hasOtherModifiers to true
+                    end if
+                    if m mod 2 = 1 then
+                      set mods to mods & "⇧"
+                      set hasOtherModifiers to true
+                    end if
+                    set hasCommand to false
+                    if (m div 8) mod 2 = 0 then
+                      set mods to mods & "⌘"
+                      set hasCommand to true
+                    end if
+                    try
+                      set vkVal to value of attribute "AXMenuItemCmdVirtualKey" of mi
+                      if vkVal is not missing value then
+                        set vk to vkVal as number
+                        if vk = 122 then
+                          set glyphChar to "F1"
+                          set isFunctionKey to true
+                        else if vk = 120 then
+                          set glyphChar to "F2"
+                          set isFunctionKey to true
+                        -- ... (F3-F15 동일 패턴)
+                        end if
+                      end if
+                    end try
+                  end if
                   set sc to mods & glyphChar
                 end if
               end try
@@ -457,7 +493,7 @@ end tell`;
 | **내용**                    | **설명**                                                                                              |
 | --------------------------- | ----------------------------------------------------------------------------------------------------- |
 | **단축키가 있을 경우 처리** | 단축키가 이미 존재하는지 확인하여,<br> 존재하면 `AXMenuItemCmdKey` 속성으로부터 해당 값을 가져옵니다. |
-| **단축키 값 할당**          | 단축키가 존재하는 경우, 그 값을 `subItemShortcut` 변수에 할당합니다.                                  |
+| **단축키 값 할당**          | 단축키가 존재하는 경우, 그 값을 `sc` 변수에 할당합니다.                                               |
 
 ---
 
@@ -469,7 +505,7 @@ end tell`;
 | **`AXMenuItemCmdModifiers`<br> 속성** | `AXMenuItemCmdModifiers`는 메뉴 항목의 <br> **modifier 키**(`⌘`, `⌥`, `⇧`, `⌃`)를 나타내는 속성입니다.<br> `modValue`는 2진수로 각 비트가 modifier 키를 나타냅니다. |
 | **`modNum`값 확인**                   | `modNum div 1 mod 2 is 1`부터 <br>`modNum div 8 mod 2 is 1`까지의 조건을 통해 modifier 키를 결정합니다.                                                             |
 | **각 modifier 키 비트**               | `m mod 2 is 1: ⇧ (Shift)` <br> `m div 2 mod 2 is 1: ⌥ (Option)` <br> `m div 4 mod 2 is 1: ⌃ (Control)`<br> `m div 8 mod 2 is 0: ⌘ (Command, 기본 포함)`             |
-| **modifier 키 처리**                  | 각 modifier 키가 1일 때 해당 키를 `shortcutModifiers`라는 빈 문자열에 추가합니다.                                                                                   |
+| **modifier 키 처리**                  | 각 modifier 키가 1일 때 해당 키를 `mods`라는 빈 문자열에 추가합니다.                                                                                                |
 
 ---
 
@@ -480,22 +516,40 @@ end tell`;
 | **내용**                             | **설명**                                                                                                                                  |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | **`AXMenuItemCmdKey`<br> 속성 사용** | AppleScript에서 `AXMenuItemCmdKey`는 메뉴 항목에 지정된 단축키의 문자를 반환합니다. 예를 들어, "C"나 "T"와 같은 키 값이 있을 수 있습니다. |
-| **단축키 문자 추출 및 처리**         | `AXMenuItemCmdChar` 속성이 존재하면 그 값을 `commandChar`에 저장하고,<br> `shortcutModifiers`와 결합하여 최종 단축키를 생성합니다.        |
-| **최종 단축키 생성 예시**            | 예를 들어, `commandChar`가 "C"이고 `shortcutModifiers`가 "⌘"일 경우,<br> 최종 단축키는 `⌘C`와 같이 만들어집니다.                          |
+| **단축키 문자 추출 및 처리**         | `AXMenuItemCmdChar` 속성이 존재하면 그 값을 `glyphChar`에 저장하고,<br> `mods`와 결합하여 최종 단축키를 생성합니다.                       |
+| **최종 단축키 생성 예시**            | 예를 들어, `glyphChar`가 "C"이고 `mods`가 "⌘"일 경우,<br> 최종 단축키는 `⌘C`와 같이 만들어집니다.                                        |
 
 ```applescript
 set cmdChar to value of attribute "AXMenuItemCmdChar" of mi
 if cmdChar is not missing value and cmdChar is not "" then
+  set glyphChar to cmdChar
+  try
+    set glyphVal to value of attribute "AXMenuItemCmdGlyph" of mi
+    if glyphVal is not missing value then
+      if glyphVal = 2 then set glyphChar to "⇥"
+      -- ... (glyph 값별 특수 키 변환)
+    end if
+  end try
   set mods to ""
   set modVal to value of attribute "AXMenuItemCmdModifiers" of mi
   if modVal is not missing value then
     set m to modVal as number
+    set isFunctionKey to false
+    set hasOtherModifiers to false
     if (m div 4) mod 2 = 1 then set mods to mods & "⌃"
     if (m div 2) mod 2 = 1 then set mods to mods & "⌥"
     if m mod 2 = 1 then set mods to mods & "⇧"
-    if (m div 8) mod 2 = 0 then set mods to mods & "⌘"
+    set hasCommand to false
+    if (m div 8) mod 2 = 0 then
+      set mods to mods & "⌘"
+      set hasCommand to true
+    end if
+    try
+      set vkVal to value of attribute "AXMenuItemCmdVirtualKey" of mi
+      -- ... (F1-F15 VirtualKey 매핑)
+    end try
   end if
-  set sc to mods & cmdChar
+  set sc to mods & glyphChar
 end if
 ```
 
@@ -534,12 +588,95 @@ macOS는 개인정보 보호와 보안을 매우 중요시 여기기 때문에 �
 
 단축키를 확인하기 위한 직관적인 안내 화면을 제공하여 사용자가 쉽게 앱을 활성화할 수 있도록 개선하였습니다.
 
-| **기능**                     | **설명**                                                                                                           |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **단계별 사용법 안내**       | 4단계 그리드 형태로 사용법을 시각적으로 안내합니다. (사용 시작 → 앱 활성화 → ⌘ 2초 누르기 → 키로 검색)                |
-| **원형 프로그레스바**        | Command 키 롱프레스 시 진행률을 SVG 원형 프로그레스바로 실시간 표시합니다.                                          |
-| **진행률 텍스트 표시**       | 롱프레스 진행 중 "XX% 진행 중..." 텍스트로 현재 상태를 안내합니다.                                                  |
-| **대기 상태 표시**           | 앱이 준비 상태일 때 "대기 중..." 애니메이션 뱃지를 표시합니다.                                                       |
+| **기능**               | **설명**                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| **단계별 사용법 안내** | 4단계 그리드 형태로 사용법을 시각적으로 안내합니다. (사용 시작 → 앱 활성화 → ⌘ 2초 누르기 → 키로 검색) |
+| **원형 프로그레스바**  | Command 키 롱프레스 시 진행률을 SVG 원형 프로그레스바로 실시간 표시합니다.                             |
+| **진행률 텍스트 표시** | 롱프레스 진행 중 "% 진행 중..." 텍스트로 현재 상태를 안내합니다.                                       |
+| **대기 상태 표시**     | 앱이 준비 상태일 때 "대기 중..." 애니메이션 뱃지를 표시합니다.                                         |
+
+---
+
+### 전역 키 리스너 및 Command 롱프레스 활성화 기능
+
+#### node-global-key-listener를 활용한 전역 키보드 감지
+
+| **기능**                            | **설명**                                                                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **리스너 초기화 및 에러 처리**      | 기존 리스너가 있으면 `kill()`로 정리 후 새로 생성하며, `try/catch`로 초기화 실패를 안전하게 처리합니다.                         |
+| **전역 키보드 이벤트 감지**         | `node-global-key-listener` 라이브러리를 통해 HotKey 앱이 포커스되지 않은 상태에서도 키보드 입력을 감지합니다.                    |
+| **Command 키 롱프레스 감지**        | Command(⌘) 키를 2초간 누르면 자동으로 HotKey 앱이 활성화됩니다. 다른 키와 조합되면 롱프레스가 취소되며, 마우스 이벤트는 무시합니다. |
+| **IPC 상태 전달**                   | `global-key-state` 채널을 통해 Command 키의 눌림/해제 상태를 렌더러 프로세스에 실시간으로 전달합니다.                           |
+| **실시간 진행률 표시**              | 50ms 간격으로 롱프레스 진행률을 계산하여 원형 프로그레스바로 표시합니다.                                                        |
+| **마우스 커서 기반 창 위치**        | 롱프레스 완료 시 마우스 커서 위치 근처에 HotKey 창이 나타나며, 화면 경계를 벗어나지 않도록 자동 조정됩니다.                     |
+
+```typescript
+const LONG_PRESS_DURATION = 2000;
+
+function setupGlobalKeyListener(): void {
+  if (globalKeyListener) {
+    globalKeyListener.kill();
+    globalKeyListener = null;
+  }
+
+  try {
+    globalKeyListener = new GlobalKeyboardListener();
+  } catch {
+    return;
+  }
+
+  let isCommandPressed = false;
+  let otherKeyPressed = false;
+
+  globalKeyListener.addListener((e) => {
+    const key = e.name?.toUpperCase();
+    const isDown = e.state === "DOWN";
+
+    const isCommandKey =
+      key === "LEFT META" ||
+      key === "RIGHT META" ||
+      key?.includes("META") ||
+      key?.includes("CMD") ||
+      key?.includes("COMMAND");
+
+    if (isCommandKey) {
+      if (isDown) {
+        if (!isCommandPressed) {
+          isCommandPressed = true;
+          otherKeyPressed = false;
+          mainWindow?.webContents.send("global-key-state", {
+            key: "command",
+            pressed: true,
+          });
+          startLongPress();
+        }
+      } else {
+        isCommandPressed = false;
+        mainWindow?.webContents.send("global-key-state", {
+          key: "command",
+          pressed: false,
+        });
+        clearLongPressTimer();
+      }
+      return;
+    }
+
+    const isMouseEvent = key?.includes("MOUSE");
+    if (isDown && isCommandPressed && !otherKeyPressed && !isMouseEvent) {
+      otherKeyPressed = true;
+      clearLongPressTimer();
+    }
+  });
+}
+```
+
+#### IPC 통신을 통한 렌더러 프로세스 연동
+
+| **채널**               | **설명**                                                    |
+| ---------------------- | ----------------------------------------------------------- |
+| `global-key-state`     | Command 키의 눌림/해제 상태를 렌더러에 전달                 |
+| `global-key-progress`  | 롱프레스 진행률(0-100%)을 실시간으로 렌더러에 전달          |
+| `global-key-activated` | 롱프레스 완료 시 활성화 상태와 현재 앱 이름을 렌더러에 전달 |
 
 # 개발 과정에서 부딪쳤던 이슈
 
@@ -567,62 +704,18 @@ macOS는 개인정보 보호와 보안을 매우 중요시 여기기 때문에 �
 
 ### 해결 방안
 
-| **해결 방법**                                                 | **상세 설명**                                                                                                                                                                                                                                                                                                                                  |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **시스템 폰트 개선**                                          | macOS는 특수기호를 원활하게 표시하기 위해 **시스템 폰트**를 사용합니다.<br> 예를 들어, "SF Pro"와 같은 폰트는 특수기호를 포함하기 때문에, 이를 전체 **body**에 적용하였습니다.                                                                                                                                                                 |
-| **예시 이미지**                                               | <img src="READMEIMG/README_IMG16_font_solution.png" alt="font" width="500px"/>                                                                                                                                                                                                                                                                 |
-| **AppleScript만 별도 스크립트 편집기(Automator) 추출값 확인** | 필터링되기 전 데이터 추출값이 잘 불러와지고 있는지<br> 하나씩 확인하여 초기 데이터부터 점검하였습니다.                                                                                                                                                                                                                                         |
-| **예시 이미지**                                               | <img src="READMEIMG/README_IMG17_script_editor.png" alt="font" width="500px"/>                                                                                                                                                                                                                                                                 |
-| **UI 요소의 속성 사용하여<br> 모디파이어 기호 매핑 개선**     | macOS 표준 UI 순서(⌃ → ⌥ → ⇧ → ⌘)와 `AXMenuItemCmdModifiers`를 사용하여 모디파이어 키의 상태를 나타내며 숫자로 표현하였습니다. <br> `⇧` (Shift)는 `1`, <br> `⌥` (Option)는 `2`, <br> `⌃` (Control)는 `4`, <br> `⌘` (Command)는 기본 포함(비트 8이 0일 때)으로 설정하였습니다.                                                                  |
-| **단축키 문자 추출 및 결합**                                  | `AXMenuItemCmdChar`에서 반환된 실제 키보드의 문자(예: `B`, `S`, `C`)를 사용하여 단축키의 마지막 부분을 구성하고, 최종적으로 **모디파이어 키**와 **문자**를 결합하여 단축키를 만들어 `subItemShortcut`에 담았습니다. <br> 예시: <br> **⌘B**: Command + B, <br> **⌃⌥⇧D**: Control + Option + Shift + D                                           |
+| **해결 방법**                                                 | **상세 설명**                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **시스템 폰트 개선**                                          | macOS는 특수기호를 원활하게 표시하기 위해 **시스템 폰트**를 사용합니다.<br> 예를 들어, "SF Pro"와 같은 폰트는 특수기호를 포함하기 때문에, 이를 전체 **body**에 적용하였습니다.                                                                                                                                                                |
+| **예시 이미지**                                               | <img src="READMEIMG/README_IMG16_font_solution.png" alt="font" width="500px"/>                                                                                                                                                                                                                                                                |
+| **AppleScript만 별도 스크립트 편집기(Automator) 추출값 확인** | 필터링되기 전 데이터 추출값이 잘 불러와지고 있는지<br> 하나씩 확인하여 초기 데이터부터 점검하였습니다.                                                                                                                                                                                                                                        |
+| **예시 이미지**                                               | <img src="READMEIMG/README_IMG17_script_editor.png" alt="font" width="500px"/>                                                                                                                                                                                                                                                                |
+| **UI 요소의 속성 사용하여<br> 모디파이어 기호 매핑 개선**     | macOS 표준 UI 순서(⌃ → ⌥ → ⇧ → ⌘)와 `AXMenuItemCmdModifiers`를 사용하여 모디파이어 키의 상태를 나타내며 숫자로 표현하였습니다. <br> `⇧` (Shift)는 `1`, <br> `⌥` (Option)는 `2`, <br> `⌃` (Control)는 `4`, <br> `⌘` (Command)는 기본 포함(비트 8이 0일 때)으로 설정하였습니다.                                                                 |
+| **단축키 문자 추출 및 결합**                                  | `AXMenuItemCmdChar`에서 반환된 실제 키보드의 문자(예: `B`, `S`, `C`)를 사용하여 단축키의 마지막 부분을 구성하고, 최종적으로 **모디파이어 키**와 **문자**를 결합하여 단축키를 만들어 `sc`에 담았습니다. <br> 예시: <br> **⌘B**: Command + B, <br> **⌃⌥⇧D**: Control + Option + Shift + D                                                   |
 | **특수 키 심볼 변환 (AppleScript)**                           | `AXMenuItemCmdGlyph` 속성을 사용하여 특수 키를 macOS 표준 심볼로 자동 변환합니다. <br> **glyph 값 매핑**: <br> `2`: ⇥(Tab), `4`: ⌤(Enter), `9`: ␣(Space), `10`: ⌦(Forward Delete), <br> `11`: ↩(Return), `23`: ⌫(Delete), `27`: ⎋(Escape), `28`: ⌧(Clear), <br> `98`: ⇞(Page Up), `100`: ←, `101`: →, `104`: ↑, `106`: ↓, `107`: ⇟(Page Down) |
 | **특수 키 심볼 변환 (TypeScript)**                            | `normalizeShortcut` 함수를 통해 AppleScript에서 받은 특수 키 charCode를 macOS 심볼로 변환합니다. <br> `0x09`→⇥(Tab), `0x7f`→⌫(Delete), `0x1b`→⎋(Escape), `0x0d`→↩(Return), `0x1c-0x1f`→←→↑↓(방향키)                                                                                                                                           |
-| **동적 앱 감지 적용**                                         | `getActiveApp` 함수로 현재 활성화된 앱을 실시간 감지하고, `getMacMenuBarInfo` 함수로 해당 앱의 메뉴바 단축키 정보를 자동으로 수집합니다. <br> 앱 전환 시 자동으로 새로운 앱의 단축키 정보를 로드합니다.                                                                                                                                        |
-| **Function 키 단축키 지원**                                   | `AXMenuItemCmdVirtualKey` 속성을 활용하여 F1-F15 Function 키가 포함된 단축키를 정확하게 추출합니다. Virtual Key Code를 기반으로 각 Function 키를 매핑합니다.                                                                                                                                                                                   |
-
----
-
-### 전역 키 리스너 및 Command 롱프레스 활성화 기능
-
-#### node-global-key-listener를 활용한 전역 키보드 감지
-
-| **기능**                      | **설명**                                                                                                                                                              |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **전역 키보드 이벤트 감지**   | `node-global-key-listener` 라이브러리를 통해 HotKey 앱이 포커스되지 않은 상태에서도 키보드 입력을 감지합니다.                                                         |
-| **Command 키 롱프레스 감지**  | Command(⌘) 키를 2초간 누르면 자동으로 HotKey 앱이 활성화됩니다. 다른 키와 조합되면 롱프레스가 취소됩니다.                                                              |
-| **실시간 진행률 표시**        | 50ms 간격으로 롱프레스 진행률을 계산하여 원형 프로그레스바로 표시합니다.                                                                                               |
-| **마우스 커서 기반 창 위치**  | 롱프레스 완료 시 마우스 커서 위치 근처에 HotKey 창이 나타나며, 화면 경계를 벗어나지 않도록 자동 조정됩니다.                                                            |
-
-```typescript
-const LONG_PRESS_DURATION = 2000;
-
-function setupGlobalKeyListener(): void {
-  globalKeyListener = new GlobalKeyboardListener();
-
-  globalKeyListener.addListener((e) => {
-    const key = e.name?.toUpperCase();
-    const isDown = e.state === "DOWN";
-
-    const isCommandKey =
-      key === "LEFT META" || key === "RIGHT META" ||
-      key?.includes("META") || key?.includes("COMMAND");
-
-    if (isCommandKey && isDown && !isCommandPressed) {
-      startLongPress();
-    } else if (isCommandKey && !isDown) {
-      clearLongPressTimer();
-    }
-  });
-}
-```
-
-#### IPC 통신을 통한 렌더러 프로세스 연동
-
-| **채널**                | **설명**                                                                   |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `global-key-state`      | Command 키의 눌림/해제 상태를 렌더러에 전달                                |
-| `global-key-progress`   | 롱프레스 진행률(0-100%)을 실시간으로 렌더러에 전달                         |
-| `global-key-activated`  | 롱프레스 완료 시 활성화 상태와 현재 앱 이름을 렌더러에 전달                |
+| **동적 앱 감지 적용**                                         | `getActiveApp` 함수로 현재 활성화된 앱을 실시간 감지하고, `getMacMenuBarInfo` 함수로 해당 앱의 메뉴바 단축키 정보를 자동으로 수집합니다. <br> 앱 전환 시 자동으로 새로운 앱의 단축키 정보를 로드합니다.                                                                                                                                       |
+| **Function 키 단축키 지원**                                   | `AXMenuItemCmdVirtualKey` 속성을 활용하여 F1-F15 Function 키가 포함된 단축키를 정확하게 추출합니다. Virtual Key Code를 기반으로 각 Function 키를 매핑합니다.                                                                                                                                                                                  |
 
 ---
 
@@ -643,6 +736,26 @@ function setupGlobalKeyListener(): void {
 | **예시 이미지**                                          | <img src="READMEIMG/README_IMG19_git_lfs_solution.png" alt="issue" width="400px"/>                                                                                                   |
 | **`2차 개선`<br> a태그 내에<br> 앱다운로드 링크 첨부**   | 깃허브 릴리즈내에 다운로드 링크를 우클릭하여 링크 복사를 한 뒤 a태그 href내에 걸어주었습니다. (https://github.com/mpnisck/HotKey/releases/download/hotkey-v2/HotKey-1.0.0-arm64.dmg) |
 | **예시 이미지**                                          | <img src="READMEIMG/README_IMG20_github_release_solution.png" alt="issue" width="400px"/>                                                                                            |
+
+---
+
+### 빌드 크기 최적화 (DMG 203MB → 96MB)
+
+| **이슈**                        | **상세 설명**                                                                                                                                                                                                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **DMG 빌드 파일<br> 용량 과다** | 앱을 빌드하여 DMG 파일을 생성했을 때 **203MB**의 큰 용량이 발생하였습니다.<br> 렌더러 전용 패키지(`tailwindcss`, `zustand`, `react-router-dom` 등)가 `dependencies`에 위치하여<br> Electron 빌드 시 `node_modules`에 포함되고, 불필요한 파일들이 프로덕션 번들에 함께 포함되는 문제였습니다. |
+
+### 해결 방안
+
+| **해결 방법**                                      | **상세 설명**                                                                                                                                                                                                                                        |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **렌더러 전용 패키지<br> `devDependencies` 이동**  | `tailwindcss`, `postcss`, `zustand`, `react-router-dom` 등 빌드 시에만 필요한 패키지를<br> `dependencies`에서 `devDependencies`로 이동하여 프로덕션 번들에서 제외하였습니다.<br> Electron은 `dependencies`의 패키지만 최종 앱에 포함하기 때문입니다. |
+| **`electron-builder.yml`<br> 파일 제외 패턴 추가** | `dist/`, `node_modules/`, `READMEIMG/`, 각종 설정 파일(`tsconfig`, `eslint`, `tailwind` 등)을<br> 빌드에서 제외하는 패턴을 추가하여 불필요한 파일이 번들에 포함되지 않도록 하였습니다.                                                               |
+| **`compression: maximum`<br> 설정 적용**           | `electron-builder.yml`에 `compression: maximum` 옵션을 추가하여<br> 빌드 결과물의 압축률을 최대로 적용하였습니다.                                                                                                                                    |
+| **불필요한<br> macOS 권한 제거**                   | 사용하지 않는 카메라, 마이크, 문서/다운로드 폴더 접근 권한을 제거하고,<br> 실제 필요한 `NSAppleEventsUsageDescription`과 `NSAccessibilityUsageDescription` 권한만 유지하였습니다.                                                                    |
+| **빌드 설정 통합**                                 | `package.json`에 중복 정의되어 있던 `build` 필드를 제거하고<br> `electron-builder.yml`로 통합하여 설정 충돌을 방지하고 관리를 일원화하였습니다.                                                                                                      |
+
+> **결과**: DMG 파일 크기 **203MB → 96MB** (약 53% 감소)
 
 # 회고록
 
