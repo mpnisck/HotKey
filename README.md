@@ -339,7 +339,7 @@ function getActiveApp(): Promise<string> {
       tell application "System Events"
         set frontApp to first application process whose frontmost is true
         if frontApp is not missing value then
-          return name of frontApp
+          return displayed name of frontApp
         else
           return ""
         end if
