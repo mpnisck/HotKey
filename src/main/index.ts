@@ -55,7 +55,7 @@ function getActiveApp(): Promise<string> {
       tell application "System Events"
         set frontApp to first application process whose frontmost is true
         if frontApp is not missing value then
-          return name of frontApp
+          return displayed name of frontApp
         else
           return ""
         end if
@@ -340,14 +340,16 @@ function clearLongPressTimer(): void {
   mainWindow?.webContents.send("global-key-progress", 0);
 }
 
-async function startLongPress(): Promise<void> {
-  try {
-    capturedActiveApp = await getActiveApp();
-  } catch {
-    capturedActiveApp = null;
-  }
-
+function startLongPress(): void {
   commandPressStart = Date.now();
+
+  getActiveApp()
+    .then((appName) => {
+      capturedActiveApp = appName;
+    })
+    .catch(() => {
+      capturedActiveApp = null;
+    });
 
   progressInterval = setInterval(() => {
     if (commandPressStart) {
