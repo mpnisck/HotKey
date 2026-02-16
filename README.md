@@ -12,8 +12,7 @@
 1. [개발 배경](#개발-배경)
    - [알아두면 유용한 단축키 정보를 검색하지 않고 바로 알 수는 없을까?](#알아두면-유용한-단축키-정보를-검색하지-않고-바로-알-수는-없을까)
 2. [HotKey 기능 미리보기](#hotkey-기능-미리보기)
-   - [사용시작 버튼 원클릭으로 메뉴바의 단축키 정보 수집](#사용시작-버튼-원클릭으로-메뉴바의-단축키-정보-수집)
-   - [Command 롱프레스로 전역 활성화 기능](#command-롱프레스로-전역-활성화-기능)
+   - [⌘ Command 롱프레스로 단축키 정보 수집](#-command-롱프레스로-단축키-정보-수집)
    - [필터링된 단축키 정보 안내](#필터링된-단축키-정보-안내)
    - [가상키보드를 통한 키보드 액션](#가상키보드를-통한-키보드-액션)
 3. [기술 스택 + 선정 이유](#기술-스택--선정-이유)
@@ -49,34 +48,29 @@
 
 # HotKey 기능 미리보기
 
-### 사용시작 → 앱 선택 → ⌘ 롱프레스로 메뉴바의 단축키 정보 수집
+### ⌘ Command 롱프레스로 단축키 정보 수집
 
 앱이 실행되면 접근성 권한이 없을 경우 시스템 설정이 자동으로 열리고<br>
-로딩 애니메이션이 끝나면 가이드 안내 페이지에서 권한 허용 방법과 사용 흐름을 안내합니다.<br>
-`사용시작` 버튼을 클릭 후 단축키를 확인할 앱을 활성화하고 `⌘ Command` 키를 2초간 꾹 누르면 해당 앱의 메뉴바 단축키 정보를 수집합니다.
-
-<img src="READMEIMG/README_IMG03_feature_01.gif" alt="feat" />
-
-### Command 롱프레스로 전역 활성화 기능
-
-어떤 앱에서든 `⌘ Command` 키를 **2초간 꾹 누르면** 마우스 커서 위치 근처에 HotKey 앱이 자동으로 활성화됩니다.<br>
+가이드 안내 페이지에서 권한 허용 방법과 사용 흐름을 안내합니다.<br>
+`사용시작` 버튼을 클릭 후 단축키를 확인할 앱을 활성화하고 `⌘ Command` 키를 **2초간 꾹 누르면**<br>
+마우스 커서 위치 근처에 HotKey가 활성화되며 해당 앱의 메뉴바 단축키 정보를 수집합니다.<br>
 원형 프로그레스바로 진행률을 실시간으로 확인할 수 있습니다.
 
-<img src="READMEIMG/README_IMG04_feature_02.gif" alt="feat" />
+<img src="READMEIMG/README_IMG03_feature_01.gif" alt="feat" />
 
 ### 필터링된 단축키 정보 안내
 
 데이터를 불러오는 동안 로딩 애니메이션이 나타나고 실행했던 앱의 단축키 정보가 보여진 후,
 사용자가 특수기호를 입력했을 때 필터링된 단축키가 나타납니다.
 
-<img src="READMEIMG/README_IMG05_feature_03.gif" alt="feat" />
+<img src="READMEIMG/README_IMG04_feature_02.gif" alt="feat" />
 
 ### 가상키보드를 통한 키보드 액션
 
 사용자의 키보드 액션을 감지하여 키보드뷰어내에 사용자가 어떤 키보드를 눌렀는지
 직관적인 UI를 통해 사용자가 키 입력을 인식하기 쉽게 만들어줍니다.
 
-<img src="READMEIMG/README_IMG06_feature_04.gif" alt="feat" />
+<img src="READMEIMG/README_IMG05_feature_03.gif" alt="feat" />
 
 # 기술 스택 + 선정 이유
 
@@ -283,7 +277,7 @@ TypeScript의 `normalizeShortcut` 함수에서 charCode 기반 특수 키를 mac
 
 | **초기 화면**                                                                       | **개선 화면**                                                                      |
 | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| <img src="READMEIMG/README_IMG07_loading_before.png" alt="loading"  width="400px"/> | <img src="READMEIMG/README_IMG08_loading_after.png" alt="loading"  width="400px"/> |
+| <img src="READMEIMG/README_IMG06_loading_before.png" alt="loading"  width="400px"/> | <img src="READMEIMG/README_IMG07_loading_after.png" alt="loading"  width="400px"/> |
 
 #### 2. **개인보호 설정 안내 화면 UI**
 
@@ -293,7 +287,7 @@ macOS는 개인정보 보호와 보안을 매우 중요시 여기기 때문에 �
 
 | **초기 화면**                                                                    | **개선 화면**                                                                   |
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| <img src="READMEIMG/README_IMG09_privacy_before.png" alt="info"  width="400px"/> | <img src="READMEIMG/README_IMG10_privacy_after.png" alt="info"  width="400px"/> |
+| <img src="READMEIMG/README_IMG08_privacy_before.png" alt="info"  width="400px"/> | <img src="READMEIMG/README_IMG09_privacy_after.png" alt="info"  width="400px"/> |
 
 #### 3. **단축키 안내 UI**
 
@@ -302,7 +296,7 @@ macOS는 개인정보 보호와 보안을 매우 중요시 여기기 때문에 �
 
 | **초기 화면**                                                                         | **개선 화면**                                                                        |
 | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| <img src="READMEIMG/README_IMG11_keyboard_before.png" alt="keyboard"  width="400px"/> | <img src="READMEIMG/README_IMG12_keyboard_after.png" alt="keyboard"  width="400px"/> |
+| <img src="READMEIMG/README_IMG10_keyboard_before.png" alt="keyboard"  width="400px"/> | <img src="READMEIMG/README_IMG11_keyboard_after.png" alt="keyboard"  width="400px"/> |
 
 #### 4. **Command 롱프레스 활성화 안내 UI**
 
@@ -405,7 +399,7 @@ function setupGlobalKeyListener(): void {
 | **이슈** <img width="220"/>    | **상세 설명**                                                                                                                                               |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **AppleScript 실행 속도 문제** | AppleScript 실행 속도가 원체 느린 상황에서 사용자의 활성화된 앱의 메뉴바의 모든 정보들을 가져오려 하니, **시간 소요는 100초**로 지연이 되는 상황이었습니다. |
-| **예시 이미지**                | <img src="READMEIMG/README_IMG13_scraping_issue.png" alt="keyboard" width="500px"/>                                                                         |
+| **예시 이미지**                | <img src="READMEIMG/README_IMG12_scraping_issue.png" alt="keyboard" width="500px"/>                                                                         |
 
 ### 해결 방안
 
@@ -413,23 +407,23 @@ function setupGlobalKeyListener(): void {
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **AppleScript 성능 개선**        | 필요한 메뉴 항목만 스크랩하도록 **AppleScript를 최적화**하였습니다. 모든 메뉴 항목을 탐색하기보다, **단축키 정보만 있는 항목만** 가져오도록 하여 **시간 소요는 최대 20초(약 80%)로 개선**되었습니다. |
 | **localStorage 캐싱**            | 데이터를 처음 받아올 때 **로컬스토리지에 저장** 후, 이후 사용 시 캐싱된 정보를 제공하여 **시간 소요는 최대 1~2초로 개선**되었습니다.                                                                 |
-| **예시 이미지**                  | <img src="READMEIMG/README_IMG14_scraping_solved.png" alt="keyboard" width="500px"/>                                                                                                                 |
+| **예시 이미지**                  | <img src="READMEIMG/README_IMG13_scraping_solved.png" alt="keyboard" width="500px"/>                                                                                                                 |
 
 ### 단축키 아이콘 실제 UI와 다른 이슈
 
 | **이슈** <img width="250"/>              | **상세 설명**                                                                                                                             |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | **특수기호가 정확히 추출되지 않는 문제** | 단축키 정보는 제대로 가져와지는데, 특수기호가 정확하게 추출되지 않는 상황이 발생했습니다. 예를 들어, `⌥ A`가 `⌥⌃A`로 출력되는 문제입니다. |
-| **예시 이미지**                          | <img src="READMEIMG/README_IMG15_shortcut_issue.png" alt="case3" width="500px"/>                                                          |
+| **예시 이미지**                          | <img src="READMEIMG/README_IMG14_shortcut_issue.png" alt="case3" width="500px"/>                                                          |
 
 ### 해결 방안
 
 | **해결 방법** <img width="220"/> | **상세 설명**                                                                                                                         |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | **시스템 폰트 개선**             | macOS 시스템 폰트("SF Pro")를 전체 body에 적용하여 특수기호가 정확히 표시되도록 개선하였습니다.                                       |
-| **예시 이미지**                  | <img src="READMEIMG/README_IMG16_font_solution.png" alt="font" width="500px"/>                                                        |
+| **예시 이미지**                  | <img src="READMEIMG/README_IMG15_font_solution.png" alt="font" width="500px"/>                                                        |
 | **AppleScript 추출값 검증**      | 스크립트 편집기를 통해 필터링 전 데이터 추출값을 개별 점검하였습니다.                                                                 |
-| **예시 이미지**                  | <img src="READMEIMG/README_IMG17_script_editor.png" alt="font" width="500px"/>                                                        |
+| **예시 이미지**                  | <img src="READMEIMG/README_IMG16_script_editor.png" alt="font" width="500px"/>                                                        |
 | **모디파이어 키 매핑 개선**      | `AXMenuItemCmdModifiers` 비트 연산으로 macOS 표준 순서(⌃→⌥→⇧→⌘)에 맞게 모디파이어를 정확히 매핑하였습니다.                            |
 | **특수 키 심볼 변환**            | `AXMenuItemCmdGlyph`(AppleScript)와 `normalizeShortcut`(TypeScript)를 활용하여 Tab, Delete, 방향키 등을 macOS 표준 심볼로 변환합니다. |
 | **Function 키 지원**             | `AXMenuItemCmdVirtualKey` 속성으로 Virtual Key Code 기반 F1~F15를 매핑합니다.                                                         |
@@ -442,7 +436,7 @@ function setupGlobalKeyListener(): void {
 | **이슈** <img width="220"/> | **상세 설명**                                                                                                                                                                                                                                                                                                                                                                                                             |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **GitHub의 파일 용량 제한** | HotKey 앱 다운로드 페이지를 Netlify에 배포하기 전 정적인 페이지를 만들기 위해 작업을 진행하는 도중 초기에는 파일구조 내에 zip파일을 넣어두고 a태그에서 download하는 방식으로 진행하였습니다. 그러나 GitHub에서는 파일 1개 당 용량이 **50MB을 넘으면 warning, 100MB를 넘으면 error**로 판단합니다. 용량이 100MB를 초과하는 파일을 commit 후 push하게 되면 **error**가 발생하며 zip파일이 push가 안 되는 이슈가 있었습니다. |
-| **예시 이미지**             | <img src="READMEIMG/README_IMG18_file_size_issue.png" alt="issue" width="400px"/>                                                                                                                                                                                                                                                                                                                                         |
+| **예시 이미지**             | <img src="READMEIMG/README_IMG17_file_size_issue.png" alt="issue" width="400px"/>                                                                                                                                                                                                                                                                                                                                         |
 
 ---
 
@@ -451,9 +445,9 @@ function setupGlobalKeyListener(): void {
 | **해결 방법** <img width="280"/>            | **상세 설명**                                                                                                                                                                        |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **1차 개선: Homebrew로 Git LFS 설치**       | Git 저장소의 크기와 속도를 최적화하여 **대용량 파일 관리**와 **저장소 용량 문제**, **버전 관리 효율성** 등을 해결할 수 있었습니다.                                                   |
-| **예시 이미지**                             | <img src="READMEIMG/README_IMG19_git_lfs_solution.png" alt="issue" width="400px"/>                                                                                                   |
+| **예시 이미지**                             | <img src="READMEIMG/README_IMG18_git_lfs_solution.png" alt="issue" width="400px"/>                                                                                                   |
 | **2차 개선: a태그 내 앱다운로드 링크 첨부** | 깃허브 릴리즈내에 다운로드 링크를 우클릭하여 링크 복사를 한 뒤 a태그 href내에 걸어주었습니다. (https://github.com/mpnisck/HotKey/releases/download/hotkey-v2/HotKey-1.0.0-arm64.dmg) |
-| **예시 이미지**                             | <img src="READMEIMG/README_IMG20_github_release_solution.png" alt="issue" width="400px"/>                                                                                            |
+| **예시 이미지**                             | <img src="READMEIMG/README_IMG19_github_release_solution.png" alt="issue" width="400px"/>                                                                                            |
 
 ---
 
