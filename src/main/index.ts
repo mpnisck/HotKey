@@ -5,9 +5,11 @@ import {
   ipcMain,
   globalShortcut,
   screen,
+  systemPreferences,
 } from "electron";
 import { join } from "path";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
+import { existsSync, chmodSync } from "fs";
 import { GlobalKeyboardListener } from "node-global-key-listener";
 
 let globalKeyListener: GlobalKeyboardListener | null = null;
@@ -290,6 +292,7 @@ function createWindow(): void {
       contextIsolation: true,
       preload: join(__dirname, "../preload/index.js"),
       devTools: true,
+      backgroundThrottling: false,
     },
   });
 
@@ -404,60 +407,147 @@ function startLongPress(): void {
   }, LONG_PRESS_DURATION);
 }
 
-function setupGlobalKeyListener(): void {
+function getMacKeyServerPath(): string {
+  if (app.isPackaged) {
+    return join(
+      process.resourcesPath,
+      "app.asar.unpacked",
+      "node_modules/node-global-key-listener/bin/MacKeyServer"
+    );
+  }
+  return "";
+}
+
+function prepareMacKeyServer(serverPath: string): boolean {
+  if (!serverPath) return true;
+
+  if (!existsSync(serverPath)) {
+    console.error("[HotKey] MacKeyServer 바이너리를 찾을 수 없음:", serverPath);
+    return false;
+  }
+
+  const binDir = join(serverPath, "..");
+
+  try {
+    execSync(`xattr -cr "${binDir}"`, { timeout: 5000 });
+    console.log("[HotKey] quarantine 속성 제거 완료");
+  } catch (e) {
+    console.warn("[HotKey] quarantine 속성 제거 실패 (무시 가능):", e);
+  }
+
+  try {
+    chmodSync(serverPath, 0o755);
+    console.log("[HotKey] MacKeyServer 실행 권한 설정 완료");
+  } catch (e) {
+    console.warn("[HotKey] MacKeyServer 실행 권한 설정 실패:", e);
+  }
+
+  try {
+    execSync(`codesign -v "${serverPath}" 2>&1`, { timeout: 5000 });
+    console.log("[HotKey] MacKeyServer 이미 서명됨");
+  } catch {
+    try {
+      execSync(`codesign --force --deep -s - "${serverPath}"`, {
+        timeout: 10000,
+      });
+      console.log("[HotKey] MacKeyServer ad-hoc 서명 완료");
+    } catch (e) {
+      console.error("[HotKey] MacKeyServer ad-hoc 서명 실패:", e);
+    }
+  }
+
+  return true;
+}
+
+function checkAccessibility(): boolean {
+  const isTrusted = systemPreferences.isTrustedAccessibilityClient(false);
+  console.log("[HotKey] 접근성 권한 상태:", isTrusted);
+  return isTrusted;
+}
+
+async function setupGlobalKeyListener(): Promise<void> {
   if (globalKeyListener) {
     globalKeyListener.kill();
     globalKeyListener = null;
   }
 
+  if (!checkAccessibility()) {
+    console.log(
+      "[HotKey] 접근성 권한이 없습니다. 시스템 설정을 열어 권한을 허용해주세요."
+    );
+    systemPreferences.isTrustedAccessibilityClient(true);
+  }
+
   try {
-    globalKeyListener = new GlobalKeyboardListener();
-  } catch {
+    const macConfig: { serverPath?: string } = {};
+
+    if (app.isPackaged) {
+      const serverPath = getMacKeyServerPath();
+      console.log("[HotKey] MacKeyServer 경로:", serverPath);
+
+      if (!prepareMacKeyServer(serverPath)) {
+        console.error(
+          "[HotKey] MacKeyServer 준비 실패. 글로벌 키 리스너를 시작할 수 없습니다."
+        );
+        return;
+      }
+
+      macConfig.serverPath = serverPath;
+    }
+
+    globalKeyListener = new GlobalKeyboardListener({ mac: macConfig });
+    console.log("[HotKey] GlobalKeyboardListener 초기화 성공");
+  } catch (error) {
+    console.error("[HotKey] GlobalKeyboardListener 초기화 실패:", error);
     return;
   }
 
   let isCommandPressed = false;
   let otherKeyPressed = false;
 
-  globalKeyListener.addListener((e) => {
-    const key = e.name?.toUpperCase();
-    const isDown = e.state === "DOWN";
+  try {
+    await globalKeyListener.addListener((e) => {
+      const key = e.name?.toUpperCase();
+      const isDown = e.state === "DOWN";
 
-    const isCommandKey =
-      key === "LEFT META" ||
-      key === "RIGHT META" ||
-      key?.includes("META") ||
-      key?.includes("CMD") ||
-      key?.includes("COMMAND");
+      const isCommandKey =
+        key === "LEFT META" ||
+        key === "RIGHT META" ||
+        key?.includes("META") ||
+        key?.includes("CMD") ||
+        key?.includes("COMMAND");
 
-    if (isCommandKey) {
-      if (isDown) {
-        if (!isCommandPressed) {
-          isCommandPressed = true;
-          otherKeyPressed = false;
+      if (isCommandKey) {
+        if (isDown) {
+          if (!isCommandPressed) {
+            isCommandPressed = true;
+            otherKeyPressed = false;
+            mainWindow?.webContents.send("global-key-state", {
+              key: "command",
+              pressed: true,
+            });
+            startLongPress();
+          }
+        } else {
+          isCommandPressed = false;
           mainWindow?.webContents.send("global-key-state", {
             key: "command",
-            pressed: true,
+            pressed: false,
           });
-          startLongPress();
+          clearLongPressTimer();
         }
-      } else {
-        isCommandPressed = false;
-        mainWindow?.webContents.send("global-key-state", {
-          key: "command",
-          pressed: false,
-        });
+        return;
+      }
+
+      const isMouseEvent = key?.includes("MOUSE");
+      if (isDown && isCommandPressed && !otherKeyPressed && !isMouseEvent) {
+        otherKeyPressed = true;
         clearLongPressTimer();
       }
-      return;
-    }
-
-    const isMouseEvent = key?.includes("MOUSE");
-    if (isDown && isCommandPressed && !otherKeyPressed && !isMouseEvent) {
-      otherKeyPressed = true;
-      clearLongPressTimer();
-    }
-  });
+    });
+  } catch (error) {
+    console.error("GlobalKeyboardListener 서버 시작 실패:", error);
+  }
 }
 
 function cleanupGlobalKeyListener(): void {
@@ -473,18 +563,39 @@ function setupGlobalShortcut(): void {
   globalShortcut.register("Shift+1", toggleWindow);
 }
 
-const openSecuritySet = (): void => {
+const openAccessibilitySettings = (): void => {
   shell.openExternal(
-    "x-apple.systempreferences:com.apple.preference.security?Privacy"
+    "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
   );
 };
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   createWindow();
   setupGlobalShortcut();
   setupIpcHandlers();
-  setupGlobalKeyListener();
-  openSecuritySet();
+
+  const isTrusted = systemPreferences.isTrustedAccessibilityClient(false);
+
+  if (!isTrusted) {
+    console.log("[HotKey] 접근성 권한이 없습니다. 설정을 엽니다.");
+    openAccessibilitySettings();
+  }
+
+  await setupGlobalKeyListener();
+
+  if (!isTrusted) {
+    const retryInterval = setInterval(async () => {
+      if (systemPreferences.isTrustedAccessibilityClient(false)) {
+        console.log(
+          "[HotKey] 접근성 권한이 허용되었습니다. 키 리스너를 재시작합니다."
+        );
+        clearInterval(retryInterval);
+        await setupGlobalKeyListener();
+      }
+    }, 2000);
+
+    setTimeout(() => clearInterval(retryInterval), 120000);
+  }
 });
 
 app.on("activate", () => {

@@ -16,6 +16,7 @@ files:
   - "!READMEIMG/*"
 asarUnpack:
   - resources/**
+  - node_modules/node-global-key-listener/**
 win:
   executableName: hotkey
 nsis:
@@ -28,11 +29,13 @@ mac:
   hardenedRuntime: false
   icon: build/icon.icns
   category: public.app-category.productivity
+  entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     NSAppleEventsUsageDescription: HotKey needs to control other applications to provide global keyboard shortcuts.
     NSAccessibilityUsageDescription: HotKey needs accessibility access to monitor global keyboard events.
   notarize: false
+afterPack: ./scripts/afterPack.js
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
@@ -44,7 +47,7 @@ linux:
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
-npmRebuild: false
+npmRebuild: true
 publish:
   provider: generic
   url: https://example.com/auto-updates
