@@ -3,6 +3,10 @@
 <p align="center"><img src="READMEIMG/README_IMG01_app_icon.png" height="160px" width="160px"></p>
 <p align="center">사용자가 이용하고 있는 프로그램의 단축키 정보를 검색하지말고 바로 알아보자!</p>
 
+<p align="center">
+  <a href="https://stump-aragon-f40.notion.site/HotKey-1928527583fe81d4a753db0bc453a0ee?source=copy_link">📋 기획 · 디자인 · 개발 구현단계 노션 문서</a>
+</p>
+
 # HotKey 앱 다운로드
 
 [![Download the app](READMEIMG/README_IMG02_download_page.png)](https://hotkey-v2.netlify.app/)
